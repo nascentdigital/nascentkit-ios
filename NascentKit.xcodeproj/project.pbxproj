@@ -7,9 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06EAF40BB7D0FDE7DD73126C /* Pods_NascentKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EEFFE31EE7FF3D6F3891BE2 /* Pods_NascentKitTests.framework */; };
+		1CFC1B6D4910D74C27C25C89 /* Pods_NascentKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A5A403F370E82BE5870DB18 /* Pods_NascentKit.framework */; };
 		FB300F5C21603FC30061B965 /* NascentKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB300F5221603FC30061B965 /* NascentKit.framework */; };
 		FB300F6121603FC30061B965 /* NascentKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F6021603FC30061B965 /* NascentKitTests.swift */; };
 		FB300F6321603FC30061B965 /* NascentKit.h in Headers */ = {isa = PBXBuildFile; fileRef = FB300F5521603FC30061B965 /* NascentKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB300F71216041340061B965 /* CameraFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F6E216041340061B965 /* CameraFeed.swift */; };
+		FB300F72216041340061B965 /* CameraFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F6F216041340061B965 /* CameraFeedView.swift */; };
+		FB300F73216041340061B965 /* CameraFeedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F70216041340061B965 /* CameraFeedError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,12 +28,22 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2B436A41E0C2D0A34D65DF39 /* Pods-NascentKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NascentKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NascentKit/Pods-NascentKit.debug.xcconfig"; sourceTree = "<group>"; };
+		3A5A403F370E82BE5870DB18 /* Pods_NascentKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NascentKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3EEFFE31EE7FF3D6F3891BE2 /* Pods_NascentKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NascentKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD92B1AC1F7F85634339B56F /* Pods-NascentKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NascentKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-NascentKitTests/Pods-NascentKitTests.release.xcconfig"; sourceTree = "<group>"; };
+		E37223D239C187712AF02BD4 /* Pods-NascentKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NascentKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NascentKitTests/Pods-NascentKitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		F1867FFD95D1A65ECB81E2CD /* Pods-NascentKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NascentKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-NascentKit/Pods-NascentKit.release.xcconfig"; sourceTree = "<group>"; };
 		FB300F5221603FC30061B965 /* NascentKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NascentKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB300F5521603FC30061B965 /* NascentKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NascentKit.h; sourceTree = "<group>"; };
 		FB300F5621603FC30061B965 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB300F5B21603FC30061B965 /* NascentKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NascentKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB300F6021603FC30061B965 /* NascentKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NascentKitTests.swift; sourceTree = "<group>"; };
 		FB300F6221603FC30061B965 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB300F6C216040520061B965 /* NascentKit.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = NascentKit.podspec; sourceTree = "<group>"; };
+		FB300F6E216041340061B965 /* CameraFeed.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeed.swift; sourceTree = "<group>"; };
+		FB300F6F216041340061B965 /* CameraFeedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedView.swift; sourceTree = "<group>"; };
+		FB300F70216041340061B965 /* CameraFeedError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1CFC1B6D4910D74C27C25C89 /* Pods_NascentKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,18 +60,42 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB300F5C21603FC30061B965 /* NascentKit.framework in Frameworks */,
+				06EAF40BB7D0FDE7DD73126C /* Pods_NascentKitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		80B94686864DB908437A6B79 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				2B436A41E0C2D0A34D65DF39 /* Pods-NascentKit.debug.xcconfig */,
+				F1867FFD95D1A65ECB81E2CD /* Pods-NascentKit.release.xcconfig */,
+				E37223D239C187712AF02BD4 /* Pods-NascentKitTests.debug.xcconfig */,
+				BD92B1AC1F7F85634339B56F /* Pods-NascentKitTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		CDA38563F1471C5F791DCF70 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3A5A403F370E82BE5870DB18 /* Pods_NascentKit.framework */,
+				3EEFFE31EE7FF3D6F3891BE2 /* Pods_NascentKitTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		FB300F4821603FC30061B965 = {
 			isa = PBXGroup;
 			children = (
+				FB300F6C216040520061B965 /* NascentKit.podspec */,
 				FB300F5421603FC30061B965 /* NascentKit */,
 				FB300F5F21603FC30061B965 /* NascentKitTests */,
 				FB300F5321603FC30061B965 /* Products */,
+				80B94686864DB908437A6B79 /* Pods */,
+				CDA38563F1471C5F791DCF70 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,6 +111,7 @@
 		FB300F5421603FC30061B965 /* NascentKit */ = {
 			isa = PBXGroup;
 			children = (
+				FB300F6D216041330061B965 /* Camera */,
 				FB300F5521603FC30061B965 /* NascentKit.h */,
 				FB300F5621603FC30061B965 /* Info.plist */,
 			);
@@ -84,6 +125,16 @@
 				FB300F6221603FC30061B965 /* Info.plist */,
 			);
 			path = NascentKitTests;
+			sourceTree = "<group>";
+		};
+		FB300F6D216041330061B965 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				FB300F6E216041340061B965 /* CameraFeed.swift */,
+				FB300F6F216041340061B965 /* CameraFeedView.swift */,
+				FB300F70216041340061B965 /* CameraFeedError.swift */,
+			);
+			path = Camera;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -104,6 +155,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FB300F6621603FC30061B965 /* Build configuration list for PBXNativeTarget "NascentKit" */;
 			buildPhases = (
+				576356579B01A6A95425FFB4 /* [CP] Check Pods Manifest.lock */,
 				FB300F4D21603FC30061B965 /* Headers */,
 				FB300F4E21603FC30061B965 /* Sources */,
 				FB300F4F21603FC30061B965 /* Frameworks */,
@@ -122,9 +174,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FB300F6921603FC30061B965 /* Build configuration list for PBXNativeTarget "NascentKitTests" */;
 			buildPhases = (
+				2450FB3BC44302FB794A785F /* [CP] Check Pods Manifest.lock */,
 				FB300F5721603FC30061B965 /* Sources */,
 				FB300F5821603FC30061B965 /* Frameworks */,
 				FB300F5921603FC30061B965 /* Resources */,
+				99196CCE98733183F3790CD3 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -189,11 +243,73 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		2450FB3BC44302FB794A785F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NascentKitTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		576356579B01A6A95425FFB4 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NascentKit-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		99196CCE98733183F3790CD3 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-NascentKitTests/Pods-NascentKitTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NascentKitTests/Pods-NascentKitTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		FB300F4E21603FC30061B965 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB300F71216041340061B965 /* CameraFeed.swift in Sources */,
+				FB300F73216041340061B965 /* CameraFeedError.swift in Sources */,
+				FB300F72216041340061B965 /* CameraFeedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,6 +456,7 @@
 		};
 		FB300F6721603FC30061B965 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2B436A41E0C2D0A34D65DF39 /* Pods-NascentKit.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -350,6 +467,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = NascentKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -365,6 +483,7 @@
 		};
 		FB300F6821603FC30061B965 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F1867FFD95D1A65ECB81E2CD /* Pods-NascentKit.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -375,6 +494,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = NascentKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -390,7 +510,9 @@
 		};
 		FB300F6A21603FC30061B965 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E37223D239C187712AF02BD4 /* Pods-NascentKitTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = NascentKitTests/Info.plist;
@@ -408,7 +530,9 @@
 		};
 		FB300F6B21603FC30061B965 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD92B1AC1F7F85634339B56F /* Pods-NascentKitTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = NascentKitTests/Info.plist;
