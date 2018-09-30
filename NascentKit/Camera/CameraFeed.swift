@@ -190,7 +190,7 @@ public class CameraFeed: NSObject,
     
     
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    func captureOutput(_ output: AVCaptureOutput,
+    private func captureOutput(_ output: AVCaptureOutput,
             didOutput buffer: CMSampleBuffer,
             from connection: AVCaptureConnection) {
         
@@ -210,7 +210,7 @@ public class CameraFeed: NSObject,
 
     // MARK: AVCapturePhotoDelegate
     
-    func photoOutput(_ output: AVCapturePhotoOutput,
+    private func photoOutput(_ output: AVCapturePhotoOutput,
             didFinishProcessingPhoto photo: AVCapturePhoto,
             error: Error?) {
         
