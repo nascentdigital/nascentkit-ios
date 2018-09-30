@@ -3,7 +3,7 @@ import AVKit
 import RxSwift
 
 
-class CameraFeed: NSObject,
+public class CameraFeed: NSObject,
         AVCaptureVideoDataOutputSampleBufferDelegate,
         AVCapturePhotoCaptureDelegate {
 

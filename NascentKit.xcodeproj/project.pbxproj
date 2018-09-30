@@ -44,6 +44,7 @@
 		FB300F6E216041340061B965 /* CameraFeed.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeed.swift; sourceTree = "<group>"; };
 		FB300F6F216041340061B965 /* CameraFeedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedView.swift; sourceTree = "<group>"; };
 		FB300F70216041340061B965 /* CameraFeedError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedError.swift; sourceTree = "<group>"; };
+		FB300FD921604F270061B965 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +91,7 @@
 		FB300F4821603FC30061B965 = {
 			isa = PBXGroup;
 			children = (
+				FB300FD921604F270061B965 /* README.md */,
 				FB300F6C216040520061B965 /* NascentKit.podspec */,
 				FB300F5421603FC30061B965 /* NascentKit */,
 				FB300F5F21603FC30061B965 /* NascentKitTests */,

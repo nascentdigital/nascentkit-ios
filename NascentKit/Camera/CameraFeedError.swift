@@ -1,7 +1,7 @@
 import Foundation
 
 
-enum CameraFeedError: Error {
+public enum CameraFeedError: Error {
     
     case notInitialized
     case disposed

@@ -3,9 +3,9 @@ import UIKit
 import AVFoundation
 
 
-class CameraFeedView: UIView {
+public class CameraFeedView: UIView {
 
-    override class var layerClass: AnyClass {
+    public override class var layerClass: AnyClass {
         return AVCaptureVideoPreviewLayer.self
     }
     

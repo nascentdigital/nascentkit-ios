@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "NascentKit"
-  s.version          = "0.1.2"
+  s.version          = "0.1.3"
   s.summary          = "An iOS framework that simplifies the creation of beautiful apps."
   s.description      = <<-DESC
 This is a framework for building iOS applications using Swift, providing many classes and components that simplify integration with the native platform.
