@@ -9,7 +9,7 @@ public class CameraFeedView: UIView {
         return AVCaptureVideoPreviewLayer.self
     }
     
-    func startPreview(cameraFeed: CameraFeed) {
+    public func startPreview(cameraFeed: CameraFeed) {
     
         // get preview layer
         let previewLayer = layer as! AVCaptureVideoPreviewLayer
@@ -18,7 +18,7 @@ public class CameraFeedView: UIView {
         previewLayer.session = cameraFeed.captureSession
     }
     
-    func stopPreview() {
+    public func stopPreview() {
      
         // get preview layer
         let previewLayer = layer as! AVCaptureVideoPreviewLayer
