@@ -35,12 +35,12 @@ public class CameraFeed: NSObject,
         }
     
         // create single for new photo
-        weak var instance = self
         return Single.create {
+            [weak self]
             single in
             
             // bail if already disposed (no need to raise error)
-            guard let self = instance else {
+            guard let self = self else {
                 single(.error(CameraFeedError.disposed))
                 return Disposables.create()
             }
@@ -110,12 +110,12 @@ public class CameraFeed: NSObject,
 
     private func startCaptureSession(cameraPosition: AVCaptureDevice.Position) -> Completable {
     
-        weak var instance = self
         return Completable.create {
+            [weak self]
             completable in
             
             // bail if already disposed (no need to raise error)
-            guard let self = instance else {
+            guard let self = self else {
                 completable(.error(CameraFeedError.disposed))
                 return Disposables.create()
             }
@@ -190,7 +190,9 @@ public class CameraFeed: NSObject,
     
     
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    private func captureOutput(_ output: AVCaptureOutput,
+    
+    @objc(captureOutput:didOutputSampleBuffer:fromConnection:)
+    public func captureOutput(_ output: AVCaptureOutput,
             didOutput buffer: CMSampleBuffer,
             from connection: AVCaptureConnection) {
         
@@ -210,7 +212,8 @@ public class CameraFeed: NSObject,
 
     // MARK: AVCapturePhotoDelegate
     
-    private func photoOutput(_ output: AVCapturePhotoOutput,
+    @objc(captureOutput:didFinishProcessingPhoto:error:)
+    public func photoOutput(_ output: AVCapturePhotoOutput,
             didFinishProcessingPhoto photo: AVCapturePhoto,
             error: Error?) {
         
