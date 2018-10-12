@@ -155,6 +155,16 @@ public class CameraFeed: NSObject,
             }
             self.captureSession.sessionPreset = .high
             self.captureSession.addOutput(videoOutput)
+            
+            // this ensures that the UIImage built in captureOutput has correct orientation
+            guard let videoOutputConnection = videoOutput.connection(with: .video) else {
+                completable(.error(CameraFeedError.cameraNotCompatible))
+                return Disposables.create()
+            }
+            
+            if videoOutputConnection.isVideoOrientationSupported {
+                videoOutputConnection.videoOrientation = .portrait
+            }
 
             // bind photo capture to session (raise error if camera can't be used for photo)
             self.photoOutput = AVCapturePhotoOutput()
@@ -232,7 +242,10 @@ public class CameraFeed: NSObject,
 
         // or return image
         else {
-            let image = UIImage(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue())
+            // using fileDataRepresentation instead of cgImageRepresentation automatically
+            // sets the correct orientation
+            
+            let image = UIImage(data: photo.fileDataRepresentation()!)!
             single(.success(image))
         }
     }
