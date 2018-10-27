@@ -1,0 +1,10 @@
+platform :ios, '11.1'
+
+target 'CameraVision' do
+  use_frameworks!
+
+  # dependencies
+  pod 'NascentKit', :path => '../../' 
+
+end
+

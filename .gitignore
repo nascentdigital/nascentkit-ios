@@ -22,3 +22,5 @@ DerivedData
 *.xcuserstate
 project.xcworkspace
 *.xcuserdatad
+examples/CameraVision/Pods
+examples/CameraVision/Podfile.lock
