@@ -128,19 +128,42 @@ Find an area with good lighting for best results.</string>
                                 <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a9i-y7-u3R" userLabel="photoButton">
+                                <rect key="frame" x="155.5" y="583" width="64" height="64"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="64" id="VEc-gH-NGt"/>
+                                    <constraint firstAttribute="height" constant="64" id="jrO-R0-Vs5"/>
+                                </constraints>
+                                <state key="normal">
+                                    <color key="titleShadowColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="takePhoto" destination="BYZ-38-t0r" eventType="touchUpInside" id="hTC-EV-KBa"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.96078431369999995" green="0.98823529409999999" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="OGI-wk-ori" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="1o8-E8-Ows"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="a9i-y7-u3R" secondAttribute="bottom" constant="20" id="CXB-lS-hc0"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="OGI-wk-ori" secondAttribute="trailing" id="VMr-3o-Mxg"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="OGI-wk-ori" secondAttribute="bottom" id="WG5-XA-GZG"/>
+                            <constraint firstItem="a9i-y7-u3R" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="srh-EM-ZnN"/>
                             <constraint firstItem="OGI-wk-ori" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="uVP-p0-W8U"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Vision Demo" id="wIj-11-9pB"/>
+                    <navigationItem key="navigationItem" title="Vision Demo" id="wIj-11-9pB">
+                        <barButtonItem key="rightBarButtonItem" image="rotate_camera" style="plain" id="TfK-m0-qEM">
+                            <connections>
+                                <action selector="toggleCameraPosition" destination="BYZ-38-t0r" id="npK-Xn-z46"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="_cameraPreview" destination="OGI-wk-ori" id="F8R-3o-kde"/>
+                        <outlet property="_takePhotoButton" destination="a9i-y7-u3R" id="2Ln-wZ-SuY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -164,4 +187,7 @@ Find an area with good lighting for best results.</string>
             <point key="canvasLocation" x="-458" y="222"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="rotate_camera" width="37" height="37"/>
+    </resources>
 </document>

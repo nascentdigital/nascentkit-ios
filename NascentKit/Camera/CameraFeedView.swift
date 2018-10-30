@@ -16,10 +16,16 @@ public class CameraFeedView: UIView {
         
         // bind feed session to layer
         previewLayer.session = cameraFeed.captureSession
+        
+        // show
+        isHidden = false
     }
     
     public func stopPreview() {
-     
+        
+        // hide
+        isHidden = false
+
         // get preview layer
         let previewLayer = layer as! AVCaptureVideoPreviewLayer
         

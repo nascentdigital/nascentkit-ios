@@ -7,14 +7,17 @@ public class CameraFeed: NSObject,
         AVCaptureVideoDataOutputSampleBufferDelegate,
         AVCapturePhotoCaptureDelegate {
 
+    public var cameraPosition = AVCaptureDevice.Position.unspecified
     internal let captureSession = AVCaptureSession()
     private let _context = CIContext()
-    private var _cameraPosition: AVCaptureDevice.Position!
     private var _photoOutput: AVCapturePhotoOutput!
 
     private let _videoSample$ = PublishSubject<UIImage>()
-    private var _takePhotoCompletion: Single<UIImage>.SingleObserver?
     
+    private var _photoPending = false
+    private var _photo: UIImage?
+    private var _photoError: Error?
+    private var _photoCompletion: Single<UIImage>.SingleObserver?
     
     public var videoSamples: Observable<UIImage> { return _videoSample$ }
 
@@ -23,31 +26,31 @@ public class CameraFeed: NSObject,
         return AVCaptureDevice.authorizationStatus(for: .video)
     }
 
-    public static func requestPermission() -> Single<AVAuthorizationStatus> {
-        return Single.create {
-            single in
-            
-            // skip if user has already given permission or if restricted
-            let permission = CameraFeed.getPermission()
-            if (permission == .authorized
-                || permission == .restricted) {
-                single(.success(permission))
-            }
-            
-            // otherwise, ask and return result
-            else {
-                AVCaptureDevice.requestAccess(for: .video) {
-                    granted in
-                    
-                    single(.success(granted
-                        ? .authorized
-                        : .denied))
-                }
-            }
-            
-            // return disposable
-            return Disposables.create()
+    public static func requestPermission() -> Observable<AVAuthorizationStatus> {
+
+        // return immediately if permission can't be requested
+        let permission = CameraFeed.getPermission()
+        if (permission != .notDetermined) {
+            return Observable.just(permission,
+                                   scheduler: ConcurrentMainScheduler.instance)
         }
+        
+        // start request
+        let deferral: AsyncSubject<AVAuthorizationStatus> = AsyncSubject()
+        AVCaptureDevice.requestAccess(for: .video) {
+            granted in
+            
+            // raise deferral
+            deferral.onNext(granted
+                ? .authorized
+                : .denied)
+            
+            // complete
+            deferral.onCompleted()
+        }
+        
+        // return deferral
+        return deferral.asObservable()
     }
 
     public func start(cameraPosition: AVCaptureDevice.Position) throws {
@@ -80,10 +83,33 @@ public class CameraFeed: NSObject,
         }
     
         // fail immediately if there's an inflight photo
-        else if (_takePhotoCompletion != nil) {
+        else if (_photoPending) {
             return Single.error(CameraFeedError.photoInProgress)
         }
+        
+        // mark photo in progress
+        _photoPending = true
     
+        // setup photo capture settings using newer HEVC format
+        let photoSettings: AVCapturePhotoSettings
+        if (_photoOutput.availablePhotoCodecTypes.contains(.hevc)) {
+            photoSettings = AVCapturePhotoSettings(format:
+                [AVVideoCodecKey: AVVideoCodecType.hevc])
+        }
+        
+        // or use default format
+        else {
+            photoSettings = AVCapturePhotoSettings()
+        }
+        
+        // TODO: enable these to be configured by caller
+        photoSettings.flashMode = .auto
+        photoSettings.isAutoStillImageStabilizationEnabled =
+            _photoOutput.isStillImageStabilizationSupported
+
+        // capture photo
+        _photoOutput.capturePhoto(with: photoSettings, delegate: self)
+
         // create single for new photo
         return Single.create {
             [weak self]
@@ -95,45 +121,73 @@ public class CameraFeed: NSObject,
                 single(.error(CameraFeedError.disposed))
                 return Disposables.create()
             }
-        
-            // capture single
-            self._takePhotoCompletion = single
             
-            // setup photo capture settings
-            let photoSettings: AVCapturePhotoSettings
-            if self._photoOutput.availablePhotoCodecTypes.contains(.hevc) {
-                photoSettings = AVCapturePhotoSettings(format:
-                    [AVVideoCodecKey: AVVideoCodecType.hevc])
+            // raise error if there was one
+            if (self._photoError != nil) {
+            
+                // clear previous error
+                let photoError = self._photoError!
+                self._photoError = nil
+
+                // raise error
+                single(.error(photoError))
+                
+                // mark complete
+                self._photoPending = false
             }
+            
+            // or use image if one was saved
+            else if (self._photo != nil) {
+            
+                // clear previous photo
+                let photo = self._photo!
+                self._photo = nil
+                
+                // return immediately with photo
+                single(.success(photo))
+                
+                // mark complete
+                self._photoPending = false
+            }
+            
+            // otherwise, capture completion
             else {
-                photoSettings = AVCapturePhotoSettings()
+                self._photoCompletion = single
             }
-            photoSettings.flashMode = .auto
-            photoSettings.isAutoStillImageStabilizationEnabled =
-                self._photoOutput.isStillImageStabilizationSupported
-
-            // capture photo
-            self._photoOutput.capturePhoto(with: photoSettings, delegate: self)
-
+        
+            // return disposable
             return Disposables.create()
+            
         }.subscribeOn(MainScheduler.instance)
     }
 
     private func initializeSession(cameraPosition: AVCaptureDevice.Position) throws {
  
         // skip if position is the same
-        if (_cameraPosition != nil
-            && _cameraPosition! == cameraPosition) {
-
+        if (self.cameraPosition == cameraPosition) {
             return
         }
+        
+        // update camera position
+        self.cameraPosition = cameraPosition
         
         // begin capture session config
         captureSession.beginConfiguration()
 
-        // reset camera session if there is one
+        // reset camera session (if required)
+        if (_photoOutput != nil) {
         
-
+            // unbind outputs
+            for output in captureSession.outputs {
+                captureSession.removeOutput(output)
+            }
+            _photoOutput = nil
+            
+            // unbind inputs
+            for input in captureSession.inputs {
+                captureSession.removeInput(input)
+            }
+        }
 
         // resolve camera device (or fail)
         let discoverySession = AVCaptureDevice.DiscoverySession(
@@ -219,6 +273,7 @@ public class CameraFeed: NSObject,
         _videoSample$.on(.next(image))
     }
 
+
     // MARK: AVCapturePhotoDelegate
     
     @objc(captureOutput:didFinishProcessingPhoto:error:)
@@ -228,27 +283,37 @@ public class CameraFeed: NSObject,
         
         print("[CameraFeed] captured photo")
 
-        // skip if there is no completion
-        guard let single = _takePhotoCompletion
+        // convert photo to image using file representation (handles orientation)
+        let image = error != nil
+            ? nil
+            : UIImage(data: photo.fileDataRepresentation()!)!
+
+        // just capture photo if there is no completion
+        guard let single = _photoCompletion
         else {
+        
+            // capture photo and potential error
+            _photo = image
+            _photoError = error
+            
+            // stop processing
             return
         }
         
         // make sure to clear completion (one-time use only)
-        _takePhotoCompletion = nil;
+        _photoCompletion = nil
         
+        // mark complete
+        _photoPending = false
+
         // fail immediately if there is an error
         if (error != nil) {
             single(.error(error!))
         }
 
-        // or return image
+        // or return photo
         else {
-            // using fileDataRepresentation instead of cgImageRepresentation automatically
-            // sets the correct orientation
-            
-            let image = UIImage(data: photo.fileDataRepresentation()!)!
-            single(.success(image))
+            single(.success(image!))
         }
     }
 }

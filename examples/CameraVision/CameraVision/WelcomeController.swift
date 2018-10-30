@@ -54,23 +54,26 @@ class WelcomeController: UIViewController {
         
         // or request camera permissions
         else {
-            CameraFeed.requestPermission()
-                .subscribeOn(ConcurrentMainScheduler.instance)
-                .subscribe(
-                    onSuccess: {
-                        [unowned self]
-                        cameraPermission in
-                        
-                        // update state based on permissions
-                        self.updatePanels(cameraPermission)
-                    },
-                    onError: {
-                        error in
-                        
-                        print("[WelcomeController] unexpected error: \(error)")
-                    }
-                )
-                .disposed(by: _disposeBag)
+            let permissions = CameraFeed.requestPermission();
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                [unowned self] in
+                
+                permissions
+                    .subscribeOn(ConcurrentMainScheduler.instance)
+                    .subscribe(
+                        onNext: {
+                            [unowned self]
+                            cameraPermission in
+                            self.updatePanels(cameraPermission)
+                        },
+                        onError: {
+                            error in
+                            print("[WelcomeController] request permissions failed: \(error)")
+                        }
+                    )
+                    .disposed(by: self._disposeBag)
+                }
         }
     }
 }
