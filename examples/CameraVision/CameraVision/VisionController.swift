@@ -22,6 +22,9 @@ class VisionController: UIViewController {
     
     private var _takePhotoObserver: NSKeyValueObservation?
 
+    var test: UIView!
+    var dxConstraint: NSLayoutConstraint!
+    var dyConstraint: NSLayoutConstraint!
 
     override func viewDidLoad() {
         
@@ -47,6 +50,34 @@ class VisionController: UIViewController {
                 ? 0.5
                 : 1.0
         }
+        
+        test = UIView()
+        test.translatesAutoresizingMaskIntoConstraints = false
+        test.backgroundColor = UIColor.clear
+        view.addSubview(test)
+       
+        // bind constraints
+        dxConstraint = NSLayoutConstraint(item: test, attribute: .centerX,
+                                           relatedBy: .equal,
+                                           toItem: view, attribute: .centerX,
+                                           multiplier: 1.0, constant: 0.0)
+        dyConstraint = NSLayoutConstraint(item: test, attribute: .centerY,
+                                           relatedBy: .equal,
+                                           toItem: view, attribute: .centerY ,
+                                           multiplier: 1.0, constant: 0.0)
+        view.addConstraints([
+            dxConstraint,
+            dyConstraint,
+            NSLayoutConstraint(item: test, attribute: .width,
+                                           relatedBy: .equal,
+                                           toItem: view, attribute: .width ,
+                                           multiplier: 1.0, constant: 0.0),
+            NSLayoutConstraint(item: test, attribute: .height,
+                                           relatedBy: .equal,
+                                           toItem: view, attribute: .height ,
+                                           multiplier: 1.0, constant: 0.0)
+        ])
+        view.bringSubviewToFront(test)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -67,6 +98,7 @@ class VisionController: UIViewController {
         catch {
             print("[VisionController] unexpected error: \(error)")
         }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -82,6 +114,11 @@ class VisionController: UIViewController {
     }
     
     @IBAction func toggleCameraPosition() {
+        
+        if (dyConstraint != nil) {
+            dyConstraint.constant = -51
+            test.updateConstraints()
+        }
         
         // determine new camera position
         let cameraPosition = _cameraFeed.cameraPosition == .front

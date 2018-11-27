@@ -16,6 +16,7 @@
 		FB300F72216041340061B965 /* CameraFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F6F216041340061B965 /* CameraFeedView.swift */; };
 		FB300F73216041340061B965 /* CameraFeedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB300F70216041340061B965 /* CameraFeedError.swift */; };
 		FBF4CE71217EB6BB00141711 /* CameraPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF4CE70217EB6BB00141711 /* CameraPermission.swift */; };
+		FBFBDC3021A71F6D009A7484 /* CaptureVideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFBDC2F21A71F6D009A7484 /* CaptureVideoPreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		FB300F70216041340061B965 /* CameraFeedError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedError.swift; sourceTree = "<group>"; };
 		FB300FD921604F270061B965 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		FBF4CE70217EB6BB00141711 /* CameraPermission.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPermission.swift; sourceTree = "<group>"; };
+		FBFBDC2F21A71F6D009A7484 /* CaptureVideoPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureVideoPreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +140,7 @@
 				FB300F6F216041340061B965 /* CameraFeedView.swift */,
 				FB300F70216041340061B965 /* CameraFeedError.swift */,
 				FBF4CE70217EB6BB00141711 /* CameraPermission.swift */,
+				FBFBDC2F21A71F6D009A7484 /* CaptureVideoPreviewView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -315,6 +318,7 @@
 				FB300F71216041340061B965 /* CameraFeed.swift in Sources */,
 				FB300F73216041340061B965 /* CameraFeedError.swift in Sources */,
 				FB300F72216041340061B965 /* CameraFeedView.swift in Sources */,
+				FBFBDC3021A71F6D009A7484 /* CaptureVideoPreviewView.swift in Sources */,
 				FBF4CE71217EB6BB00141711 /* CameraPermission.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

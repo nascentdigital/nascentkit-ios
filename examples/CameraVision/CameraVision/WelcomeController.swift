@@ -34,9 +34,6 @@ class WelcomeController: UIViewController {
     
     private func updatePanels(_ cameraPermission: AVAuthorizationStatus) {
     
-        // TODO: we should handle other cases, like the camera access not being
-        //       available due to access control restrictions
-
         // show permission panel if required
         _permissionPanel.isHidden = cameraPermission == .authorized
         _continuePanel.isHidden = !_permissionPanel.isHidden
@@ -54,26 +51,20 @@ class WelcomeController: UIViewController {
         
         // or request camera permissions
         else {
-            let permissions = CameraFeed.requestPermission();
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                [unowned self] in
-                
-                permissions
-                    .subscribeOn(ConcurrentMainScheduler.instance)
-                    .subscribe(
-                        onNext: {
-                            [unowned self]
-                            cameraPermission in
-                            self.updatePanels(cameraPermission)
-                        },
-                        onError: {
-                            error in
-                            print("[WelcomeController] request permissions failed: \(error)")
-                        }
-                    )
-                    .disposed(by: self._disposeBag)
-                }
+            CameraFeed.requestPermission()
+                .subscribeOn(ConcurrentMainScheduler.instance)
+                .subscribe(
+                    onNext: {
+                        [unowned self]
+                        cameraPermission in
+                        self.updatePanels(cameraPermission)
+                    },
+                    onError: {
+                        error in
+                        print("[WelcomeController] request permissions failed: \(error)")
+                    }
+                )
+                .disposed(by: _disposeBag)
         }
     }
 }
