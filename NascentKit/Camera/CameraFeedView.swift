@@ -7,7 +7,6 @@ public class CameraFeedView: UIView {
     private let _capturePreview = CaptureVideoPreviewView()
     private var _dxConstraint: NSLayoutConstraint!
     private var _dyConstraint: NSLayoutConstraint!
-
     public override init(frame: CGRect) {
     
         // call base constructor
@@ -22,6 +21,7 @@ public class CameraFeedView: UIView {
         // call base constructor
         super.init(coder: coder)!
         
+        
         // initialize
         initialize()
     }
@@ -31,13 +31,16 @@ public class CameraFeedView: UIView {
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
         previewLayer.session = cameraFeed.captureSession
-        
+    
         // position layer
-        previewLayer.backgroundColor = UIColor.red.cgColor
+        previewLayer.backgroundColor = UIColor.green.cgColor
         previewLayer.videoGravity = .resizeAspect
         
         // show
         isHidden = false
+
+        // force refresh
+        layoutIfNeeded()
     }
     
     public func stopPreview() {
@@ -49,27 +52,38 @@ public class CameraFeedView: UIView {
         let previewLayer = _capturePreview.previewLayer
         previewLayer.session = nil
     }
-    
+
     override public func layoutSubviews() {
+        let previewLayer = self._capturePreview.previewLayer
+        let oldLayerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         
-        // update constraint (if required)
-        if (_dyConstraint != nil) {
-        
-            // determine new offset
-            let previewLayer = _capturePreview.previewLayer
-            let offset = previewLayer.layerPointConverted(
-                fromCaptureDevicePoint: CGPoint(x: 0, y: 0))
-            
-            // update constraints
-            _dyConstraint.constant = -offset.y
-            
-            let layerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+        DispatchQueue.main.async {
+            [unowned self] in
+            let newLayerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+            print("New Layer Size \(newLayerSize) , oldLayerSize \(String(describing: oldLayerSize))")
 
-            print("updated offset: \(offset) \(layerSize)")
+            // If the layerSize hasn't changed in time for the async closure to run, then correct offset can be calculated
+            if(self._dyConstraint != nil && oldLayerSize.equalTo(newLayerSize)) {
+                // determine new offset
+                let offset = previewLayer.layerPointConverted(
+                    fromCaptureDevicePoint: CGPoint(x: 0, y: 0))
+                
+                // update constraints
+                self._dyConstraint.constant = -offset.y
+                
+                print("updated offset: \(offset) \(newLayerSize)")
+                
+                self.updateConstraints()
+            } else {
+                // Layer size is still different, need to run layoutSubviews again until layer stays constant
+                self.setNeedsLayout()
+                self.layoutIfNeeded()
+            }
         }
-
+        
         // call base method
         super.layoutSubviews()
+
     }
     
     private func initialize() {
@@ -89,7 +103,7 @@ public class CameraFeedView: UIView {
                                            relatedBy: .equal,
                                            toItem: self, attribute: .centerY,
                                            multiplier: 1.0, constant: 0.0)
-       
+        
         // bind constraints
         addConstraints([
             _dxConstraint,
