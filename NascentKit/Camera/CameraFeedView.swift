@@ -7,6 +7,9 @@ public class CameraFeedView: UIView {
     private let _capturePreview = CaptureVideoPreviewView()
     private var _dxConstraint: NSLayoutConstraint!
     private var _dyConstraint: NSLayoutConstraint!
+    private var _innerContainerSize: CGRect!
+    private var _lastOffset: CGFloat!
+    
     public override init(frame: CGRect) {
     
         // call base constructor
@@ -54,30 +57,65 @@ public class CameraFeedView: UIView {
     }
 
     override public func layoutSubviews() {
-        let previewLayer = self._capturePreview.previewLayer
-        let oldLayerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         
-        DispatchQueue.main.async {
+        let previewLayer = self._capturePreview.previewLayer
+        
+        // if this is the first load
+        if (_innerContainerSize == nil || _lastOffset == nil || _innerContainerSize.isEmpty) {
+            
+            DispatchQueue.main.async {
             [unowned self] in
-            let newLayerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
-            print("New Layer Size \(newLayerSize) , oldLayerSize \(String(describing: oldLayerSize))")
-
-            // If the layerSize hasn't changed in time for the async closure to run, then correct offset can be calculated
-            if(self._dyConstraint != nil && oldLayerSize.equalTo(newLayerSize)) {
-                // determine new offset
-                let offset = previewLayer.layerPointConverted(
-                    fromCaptureDevicePoint: CGPoint(x: 0, y: 0))
+            
+                // set the inner container size
+                self._innerContainerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+                
+                // determine offset
+                self._lastOffset = previewLayer.layerPointConverted(
+                        fromCaptureDevicePoint: CGPoint(x: 0, y: 0)).y
                 
                 // update constraints
-                self._dyConstraint.constant = -offset.y
+                self._dyConstraint.constant = -self._lastOffset
+            }
+        }
+        // otherwse
+        else {
+        
+            // get last container size
+            let oldContainerSize = _innerContainerSize
+            
+            DispatchQueue.main.async {
+            [unowned self] in
                 
-                print("updated offset: \(offset) \(newLayerSize)")
+                // get outer container size
+                let outerContainerSize = self.bounds
                 
-                self.updateConstraints()
-            } else {
-                // Layer size is still different, need to run layoutSubviews again until layer stays constant
-                self.setNeedsLayout()
-                self.layoutIfNeeded()
+                // calculate aspect rations
+                let innerContainerAspectRatio = oldContainerSize!.width / oldContainerSize!.height
+                let outerContainerAspectRatio = outerContainerSize.width / outerContainerSize.height
+                
+                if (outerContainerAspectRatio >= innerContainerAspectRatio) {
+                
+                    // remove offset
+                    self._dyConstraint.constant = 0
+                    
+                } else {
+                    
+                    // recalculate offset
+                    let newInnerContainerSize = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+                    
+                    let newOffset = previewLayer.layerPointConverted(
+                            fromCaptureDevicePoint: CGPoint(x: 0, y: 0)).y
+                    
+                    // update constraints
+                    self._dyConstraint.constant = -newOffset
+                    
+                    // if the new size is different
+                    if (newInnerContainerSize != self._innerContainerSize) {
+                        // save the new values
+                        self._innerContainerSize = newInnerContainerSize
+                        self._lastOffset = newOffset
+                    }
+                }
             }
         }
         
