@@ -34,7 +34,9 @@ public class CameraFeedView: UIView {
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
         previewLayer.session = cameraFeed.captureSession
-    
+        
+
+        
         // position layer
         previewLayer.backgroundColor = UIColor.green.cgColor
         previewLayer.videoGravity = .resizeAspect
@@ -59,7 +61,6 @@ public class CameraFeedView: UIView {
     override public func layoutSubviews() {
         
         let previewLayer = self._capturePreview.previewLayer
-        
         // if this is the first load
         if (_innerContainerSize == nil || _lastOffset == nil || _innerContainerSize.isEmpty) {
             
