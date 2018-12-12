@@ -9,6 +9,7 @@ public class CameraFeedView: UIView {
     private var _dyConstraint: NSLayoutConstraint!
     private var _innerContainerSize: CGRect!
     private var _lastOffset: CGFloat!
+    private var _previewLayerRectConverted: CGRect!
     
     public override init(frame: CGRect) {
     
@@ -24,18 +25,16 @@ public class CameraFeedView: UIView {
         // call base constructor
         super.init(coder: coder)!
         
-        
         // initialize
         initialize()
     }
+
     
     public func startPreview(cameraFeed: CameraFeed) {
     
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
         previewLayer.session = cameraFeed.captureSession
-        
-
         
         // position layer
         previewLayer.backgroundColor = UIColor.green.cgColor
@@ -76,6 +75,9 @@ public class CameraFeedView: UIView {
                 
                 // update constraints
                 self._dyConstraint.constant = -self._lastOffset
+                
+                // Update preview layer converted rect anytime the subviews layout changes
+                self.updatePreviewLayerRectConverted()
             }
         }
         // otherwse
@@ -117,6 +119,9 @@ public class CameraFeedView: UIView {
                         self._lastOffset = newOffset
                     }
                 }
+                
+                // Update preview layer converted rect anytime the subviews layout changes
+                self.updatePreviewLayerRectConverted()
             }
         }
         
@@ -156,5 +161,63 @@ public class CameraFeedView: UIView {
                                toItem: self, attribute: .height,
                                multiplier: 1.0, constant:0.0)
         ])
+    }
+    
+    /*
+        Calculate the Rect of the layerPointConverted coordinate system for the capturePreview preview layer.
+        This is used when converting CGPoints from their native image coordinates to coordinates relative to the preview layer
+     */
+    private func updatePreviewLayerRectConverted() {
+        let previewLayer = _capturePreview.previewLayer
+        if(previewLayer.frame.width != 0 && previewLayer.frame.height != 0) {
+            
+            // Get all 4 points of the coordinate system where (0,0) is bottom right and (1,1) is top left
+            let topLeft = previewLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint(x: 1, y: 1))
+            let topRight = previewLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint(x: 1, y: 0))
+            let bottomLeft = previewLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint(x: 0, y: 1))
+            let bottomRight = previewLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint(x: 0, y: 0))
+
+            _previewLayerRectConverted = CGRect(x: topLeft.x,
+                                                y: topLeft.y,
+                                                width: (topRight.x - topLeft.x),
+                                                height: (bottomLeft.y - topLeft.y))
+        }
+    }
+    
+    /*
+     * Translates a given Rect to be relative to the camera capture preview
+     */
+    public func translateImagePointToPreviewLayer(forPoint point: CGPoint, relativeTo size: CGSize) -> CGPoint {
+        let previewLayer = _capturePreview.previewLayer
+        
+        /*
+            Since the image captured will have its X,Y coordinated flipped
+            [(0,0) -> BottomLeft coordinate on native image translates to (0,1) -> BottomRight coordinate of preview layer coordinate system and vice versa]
+            need to flip relative point calculations
+         */
+        let relativePoint = CGPoint(x: point.y / size.height, y: point.x / size.width)
+
+        // Set up transform to account for the Y offset as well as translate the X coordinate as image captured from captureDevice is flipped
+        let transform = CGAffineTransform.identity
+            .scaledBy(x: -1, y: 1)
+            .translatedBy(x: -_previewLayerRectConverted.width, y: self._dyConstraint.constant)
+
+        // Convert the point from the capture device coordinate system to the previewLayer's
+        var translatedPoint = previewLayer.layerPointConverted(fromCaptureDevicePoint: relativePoint)
+        
+        // Apply the transform on the translated point
+        return translatedPoint.applying(transform)
+        
+    }
+    
+    /*
+     * Summary: Translates a given Rect to be relative to the camera capture preview
+     */
+    public func translateRectInPreview(rect: CGRect) -> CGRect {
+        // Modify the origin of the rect by the offset calculated for the CamereFeedView
+        return CGRect(x: rect.origin.x,
+                      y: rect.origin.y - self._dyConstraint.constant,
+                      width: rect.width,
+                      height: rect.height)
     }
 }
