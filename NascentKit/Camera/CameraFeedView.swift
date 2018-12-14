@@ -38,7 +38,7 @@ public class CameraFeedView: UIView {
         previewLayer.session = cameraFeed.captureSession
         
         // position layer
-        previewLayer.backgroundColor = UIColor.purple.cgColor
+        previewLayer.backgroundColor = UIColor.clear.cgColor
         previewLayer.videoGravity = .resizeAspect
         
         // show
@@ -133,7 +133,7 @@ public class CameraFeedView: UIView {
     
     private func initialize() {
         
-        backgroundColor = UIColor.green
+        backgroundColor = UIColor.clear
 
         // bind preview view
         addSubview(_capturePreview)

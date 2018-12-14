@@ -138,13 +138,7 @@ Find an area with good lighting for best results.</string>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Vision Demo" id="wIj-11-9pB">
-                        <barButtonItem key="rightBarButtonItem" image="rotate_camera" style="plain" id="TfK-m0-qEM">
-                            <connections>
-                                <action selector="toggleCameraPosition" destination="BYZ-38-t0r" id="npK-Xn-z46"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Vision Demo" id="wIj-11-9pB"/>
                     <connections>
                         <outlet property="_cameraPreview" destination="OGI-wk-ori" id="F8R-3o-kde"/>
                     </connections>
@@ -170,7 +164,4 @@ Find an area with good lighting for best results.</string>
             <point key="canvasLocation" x="-458" y="222"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="rotate_camera" width="75" height="75"/>
-    </resources>
 </document>

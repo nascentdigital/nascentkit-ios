@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		41D266FAF5C5D6CA14C0821F /* Pods_CameraVision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46FC0F7EC3835C066CA81F5A /* Pods_CameraVision.framework */; };
 		E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E029924B21BB2267002B607A /* GoogleService-Info.plist */; };
+		E05DFEEC21C3FD0B00FBAE3A /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05DFEEB21C3FD0B00FBAE3A /* DetailsViewController.swift */; };
+		E05DFEF021C4086400FBAE3A /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEEF21C4086400FBAE3A /* background.png */; };
+		E05DFEF221C40B5F00FBAE3A /* Error.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF121C40B5F00FBAE3A /* Error.png */; };
+		E05DFEF421C40B6600FBAE3A /* Success.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF321C40B6600FBAE3A /* Success.png */; };
+		E05DFEF621C40B6E00FBAE3A /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF521C40B6D00FBAE3A /* info.png */; };
 		FB2B9D162183D6CA00897AF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */; };
 		FB2B9D182183D6CA00897AF5 /* VisionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D172183D6CA00897AF5 /* VisionController.swift */; };
 		FB2B9D1B2183D6CA00897AF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB2B9D192183D6CA00897AF5 /* Main.storyboard */; };
@@ -22,6 +27,11 @@
 		7EC5DCCAF838AEC3E5D9F4FE /* Pods-CameraVision.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.debug.xcconfig"; sourceTree = "<group>"; };
 		C006BE3F50446208C75A6C48 /* Pods-CameraVision.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.release.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.release.xcconfig"; sourceTree = "<group>"; };
 		E029924B21BB2267002B607A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E05DFEEB21C3FD0B00FBAE3A /* DetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
+		E05DFEEF21C4086400FBAE3A /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
+		E05DFEF121C40B5F00FBAE3A /* Error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Error.png; sourceTree = "<group>"; };
+		E05DFEF321C40B6600FBAE3A /* Success.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Success.png; sourceTree = "<group>"; };
+		E05DFEF521C40B6D00FBAE3A /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
 		FB2B9D122183D6CA00897AF5 /* CameraVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FB2B9D172183D6CA00897AF5 /* VisionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionController.swift; sourceTree = "<group>"; };
@@ -90,6 +100,11 @@
 				FB2B9D1E2183D6CB00897AF5 /* LaunchScreen.storyboard */,
 				E029924B21BB2267002B607A /* GoogleService-Info.plist */,
 				FB2B9D212183D6CB00897AF5 /* Info.plist */,
+				E05DFEEB21C3FD0B00FBAE3A /* DetailsViewController.swift */,
+				E05DFEEF21C4086400FBAE3A /* background.png */,
+				E05DFEF121C40B5F00FBAE3A /* Error.png */,
+				E05DFEF321C40B6600FBAE3A /* Success.png */,
+				E05DFEF521C40B6D00FBAE3A /* info.png */,
 			);
 			path = CameraVision;
 			sourceTree = "<group>";
@@ -155,10 +170,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E05DFEF221C40B5F00FBAE3A /* Error.png in Resources */,
 				FB2B9D202183D6CB00897AF5 /* LaunchScreen.storyboard in Resources */,
+				E05DFEF021C4086400FBAE3A /* background.png in Resources */,
 				E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */,
 				FB2B9D1D2183D6CB00897AF5 /* Assets.xcassets in Resources */,
+				E05DFEF421C40B6600FBAE3A /* Success.png in Resources */,
 				FB2B9D1B2183D6CA00897AF5 /* Main.storyboard in Resources */,
+				E05DFEF621C40B6E00FBAE3A /* info.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +270,7 @@
 				FB2B9D282183D98400897AF5 /* WelcomeController.swift in Sources */,
 				FB2B9D182183D6CA00897AF5 /* VisionController.swift in Sources */,
 				FB2B9D162183D6CA00897AF5 /* AppDelegate.swift in Sources */,
+				E05DFEEC21C3FD0B00FBAE3A /* DetailsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,7 +420,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -420,7 +440,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

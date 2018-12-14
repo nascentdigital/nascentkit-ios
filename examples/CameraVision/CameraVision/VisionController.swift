@@ -77,8 +77,50 @@ extension UIImage {
     }
 }
 
-class VisionController: UIViewController {
+enum StatusColors {
+    case infoColor
+    case successColor
+    case errorColor
+}
+enum StatusIcons {
+    case infoIcon
+    case successIcon
+    case errorIcon
+}
 
+extension StatusColors {
+    var value: UIColor {
+        get {
+            switch self {
+            case .infoColor :
+                return UIColor(red: 4/255, green: 30/255, blue: 66/255, alpha: 1)
+            case .successColor:
+                return UIColor(red: 5/255, green: 74/255, blue: 170/255, alpha: 1)
+            case .errorColor:
+                return UIColor(red: 239/255, green: 8/255, blue: 3/255, alpha: 1)
+            default:
+                return UIColor.clear
+            }
+        }
+    }
+}
+
+extension StatusIcons {
+    var value: UIImage {
+        get {
+            switch self {
+            case .infoIcon:
+                return UIImage(named: "info.png")!
+            case .successIcon:
+                return UIImage(named: "Success.png")!
+            case .errorIcon:
+                return UIImage(named: "Error.png")!
+            }
+        }
+    }
+}
+class VisionController: UIViewController {
+    
     enum BarcodeType: String {
         case CertificateNo = "CertificateNo"
         case DateOfBirth = "DateOfBirth"
@@ -90,7 +132,7 @@ class VisionController: UIViewController {
         case DateOfBirth = 2
         case Invalid = -1
     }
-    
+
     let X_VALID_MARGIN: Int = 5
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
@@ -122,10 +164,11 @@ class VisionController: UIViewController {
         // call base implementation
         super.viewDidLoad()
         
+        self.view.backgroundColor = UIColor(patternImage: UIImage(named: "background.png")!)
         //Setup status view to prompt the user of any issues
         let statusRect = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
         statusView = UIView(frame: statusRect)
-        statusView.layer.backgroundColor = UIColor.blue.cgColor
+        statusView.layer.backgroundColor = StatusColors.infoColor.value.cgColor
         self._cameraPreview.setAdditionalTopOffsetAmount(By: statusRect.height)
         self._cameraPreview.addSubview(statusView)
         
@@ -134,7 +177,6 @@ class VisionController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        
         let previewFrame = self._cameraPreview.frame
         
         /*  Each barcode reader view will be 50% of total view width minus padding
@@ -159,14 +201,14 @@ class VisionController: UIViewController {
         _certificateBarcodeReader = UIView(frame: certificateBarcodeRect)
         _birthdayBarcodeReader = UIView(frame: birthdayBarcodeRect)
 
-        _promptLabel = UILabel(frame: CGRect(x: 10, y: 5, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
+        _promptLabel = UILabel(frame: CGRect(x: 10, y: 0, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
         
         //Configure prompt label
         _promptLabel.contentMode = .scaleToFill
         _promptLabel.textColor = UIColor.white;
         _promptLabel.numberOfLines = 0
         _promptLabel.text = ""
-        _promptLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 12)
+        _promptLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 14)
         _promptLabel.layer.zPosition = 1
         
         //Configure Barcode Label
@@ -214,7 +256,10 @@ class VisionController: UIViewController {
         
         // Show initial status to prompt the user
         self.showStatusView(statusText: "Scanning document to validate. Please line up with guides", isError: false)
-        initializeCameraFeedVideoSampler()
+        
+        // Delay to start the camera feed
+
+        self.initializeCameraFeedVideoSampler()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -264,9 +309,8 @@ class VisionController: UIViewController {
                     onNext: {
                         [unowned self]
                         image in
-                        self.showStatusView(statusText: "Attempting to capture image", isError: false)
                         if(!self.shouldScan) {
-                            
+                            // End subscription here (how?)
                             return
                         }
                         let _visionImage = VisionImage(image: image)
@@ -434,14 +478,27 @@ class VisionController: UIViewController {
     }
     
     private func showStatusView(statusText: String, isError: Bool) {
-        
+        var icon: UIImage!
         if(isError) {
-            self.statusView.layer.backgroundColor = UIColor.red.cgColor
+            self.statusView.layer.backgroundColor = StatusColors.errorColor.value.cgColor
+            icon = StatusIcons.errorIcon.value
         } else {
-            self.statusView.layer.backgroundColor = UIColor(red: 0, green: 0.5294, blue: 1, alpha: 1.0).cgColor
+            self.statusView.layer.backgroundColor = StatusColors.successColor.value.cgColor
+            icon = StatusIcons.successIcon.value
         }
         
-        self._promptLabel?.text = statusText
+        // Load icon to be displayed with text
+        let iconAttachment = NSTextAttachment()
+        iconAttachment.image = icon
+        let iconString = NSAttributedString(attachment: iconAttachment)
+
+        // Add a tab between icon and status text
+        let displayedText = "\t" + statusText
+        let stringText = NSAttributedString(string: displayedText)
+        let mutableAttachmentString = NSMutableAttributedString(attributedString: iconString)
+        mutableAttachmentString.append(stringText)
+
+        self._promptLabel?.attributedText = mutableAttachmentString
     }
     
     @IBAction func toggleCameraPosition() {
