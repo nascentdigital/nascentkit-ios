@@ -136,6 +136,7 @@ class VisionController: UIViewController {
     let X_VALID_MARGIN: Int = 5
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
+    let MANUAL_SCAN_WAIT_TIME = 5.0
     var shouldScan: Bool = true;
     
     
@@ -146,6 +147,8 @@ class VisionController: UIViewController {
     var certificateBarcodeLabel: UILabel!
     var birthdayBarcodeLabel: UILabel!
     var _promptLabel: UILabel!
+    
+    @IBOutlet weak var scanButton: UIButton!
     
     var statusView: UIView!
     
@@ -163,6 +166,9 @@ class VisionController: UIViewController {
         
         // call base implementation
         super.viewDidLoad()
+        
+        // Hide scan button on first load until user doesnt take proper photo
+        self.scanButton.isHidden = true
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "background.png")!)
         //Setup status view to prompt the user of any issues
@@ -260,6 +266,7 @@ class VisionController: UIViewController {
         // Delay to start the camera feed
 
         self.initializeCameraFeedVideoSampler()
+        self.initiateScanButtonHelper()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -381,6 +388,7 @@ class VisionController: UIViewController {
     }
     
     private func takeImagePhoto(){
+        self.shouldScan = false;
         self._cameraFeed.takePhoto()
             .subscribeOn(ConcurrentMainScheduler.instance)
             .subscribe(onSuccess: {
@@ -389,8 +397,9 @@ class VisionController: UIViewController {
                 
                 if let fixedImage = image.fixedOrientation() {
                     self.showStatusView(statusText: "Successfully captured Photo", isError: false)
-                    self.shouldScan = false;
                     self.readImageText(image: fixedImage)
+                } else {
+                    self.shouldScan = true
                 }
             }, onError: {
                 error in
@@ -501,6 +510,16 @@ class VisionController: UIViewController {
         self._promptLabel?.attributedText = mutableAttachmentString
     }
     
+    /*
+        Function to display the manual picture scan button if the user hasnt lined up ( or cant line up ) within set time
+     */
+    private func initiateScanButtonHelper() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + self.MANUAL_SCAN_WAIT_TIME) {
+            [unowned self] in
+            self.scanButton.isHidden = false
+        }
+    }
+    
     @IBAction func toggleCameraPosition() {
         
         // determine new camera position
@@ -519,8 +538,7 @@ class VisionController: UIViewController {
         }
     }
     
-    @IBAction func takePhoto() {
-    
-        print("[VisionController] taking photo")
+    @IBAction func takePhoto(_ sender: Any) {
+        self.takeImagePhoto()
     }
 }
