@@ -8,6 +8,6 @@ target 'CameraVision' do
   pod 'Firebase/Core'
   pod 'Firebase/MLVision'
   pod 'Firebase/MLVisionBarcodeModel'
-  
+  pod 'Firebase/MLVisionTextModel'
 end
 

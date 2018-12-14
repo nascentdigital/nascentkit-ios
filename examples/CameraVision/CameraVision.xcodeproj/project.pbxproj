@@ -106,6 +106,7 @@
 				FB2B9D0F2183D6CA00897AF5 /* Frameworks */,
 				FB2B9D102183D6CA00897AF5 /* Resources */,
 				8917E036A7AB5C16B2430F85 /* [CP] Embed Pods Frameworks */,
+				CA44C184B772D146A448181B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -198,6 +199,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CA44C184B772D146A448181B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleMobileVision/GoogleMVTextDetectorResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleMVTextDetectorResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E10CE6D837B8D8D87BBA790E /* [CP] Check Pods Manifest.lock */ = {
@@ -377,6 +400,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -396,6 +420,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -13,6 +13,70 @@ import RxSwift
 import Firebase
 
 
+extension UIImage {
+    func fixedOrientation() -> UIImage? {
+        
+        guard imageOrientation != UIImage.Orientation.up else {
+            //This is default orientation, don't need to do anything
+            return self.copy() as? UIImage
+        }
+        
+        guard let cgImage = self.cgImage else {
+            //CGImage is not available
+            return nil
+        }
+        
+        guard let colorSpace = cgImage.colorSpace, let ctx = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: cgImage.bitsPerComponent, bytesPerRow: 0, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return nil //Not able to create CGContext
+        }
+        
+        var transform: CGAffineTransform = CGAffineTransform.identity
+        
+        switch imageOrientation {
+        case .down, .downMirrored:
+            transform = transform.translatedBy(x: size.width, y: size.height)
+            transform = transform.rotated(by: CGFloat.pi)
+            break
+        case .left, .leftMirrored:
+            transform = transform.translatedBy(x: size.width, y: 0)
+            transform = transform.rotated(by: CGFloat.pi / 2.0)
+            break
+        case .right, .rightMirrored:
+            transform = transform.translatedBy(x: 0, y: size.height)
+            transform = transform.rotated(by: CGFloat.pi / -2.0)
+            break
+        case .up, .upMirrored:
+            break
+        }
+        
+        //Flip image one more time if needed to, this is to prevent flipped image
+        switch imageOrientation {
+        case .upMirrored, .downMirrored:
+            transform.translatedBy(x: size.width, y: 0)
+            transform.scaledBy(x: -1, y: 1)
+            break
+        case .leftMirrored, .rightMirrored:
+            transform.translatedBy(x: size.height, y: 0)
+            transform.scaledBy(x: -1, y: 1)
+        case .up, .down, .left, .right:
+            break
+        }
+        
+        ctx.concatenate(transform)
+        
+        switch imageOrientation {
+        case .left, .leftMirrored, .right, .rightMirrored:
+            ctx.draw(self.cgImage!, in: CGRect(x: 0, y: 0, width: size.height, height: size.width))
+        default:
+            ctx.draw(self.cgImage!, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+            break
+        }
+        
+        guard let newCGImage = ctx.makeImage() else { return nil }
+        return UIImage.init(cgImage: newCGImage, scale: 1, orientation: .up)
+    }
+}
+
 class VisionController: UIViewController {
 
     enum BarcodeType: String {
@@ -30,13 +94,18 @@ class VisionController: UIViewController {
     let X_VALID_MARGIN: Int = 5
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
+    var shouldScan: Bool = true;
+    
     
     @IBOutlet weak var _cameraPreview: CameraFeedView!
-    @objc @IBOutlet weak var _takePhotoButton: UIButton!
     @IBOutlet weak var _certificateLabel: UILabel!
     var _certificateBarcodeReader: UIView!
     var _birthdayBarcodeReader: UIView!
+    var certificateBarcodeLabel: UILabel!
+    var birthdayBarcodeLabel: UILabel!
     var _promptLabel: UILabel!
+    
+    var statusView: UIView!
     
     private let _cameraFeed = CameraFeed()
     private var _cameraDirection = AVCaptureDevice.Position.back
@@ -44,8 +113,6 @@ class VisionController: UIViewController {
     private var _takePhotoObserver: NSKeyValueObservation?
     private var barcodeDetector: VisionBarcodeDetector!
     private let _disposeBag = DisposeBag()
-    private var _nativeImageHeight: CGFloat?
-    private var _nativeImageWidth: CGFloat?
     private var _nativeImageSize: CGSize?
     private var _imageXOffset: Int!
     private var _imageYOffset: Int!
@@ -54,147 +121,100 @@ class VisionController: UIViewController {
         
         // call base implementation
         super.viewDidLoad()
-
-        // customize photo button to be round
-        _takePhotoButton.layer.masksToBounds = false
-        _takePhotoButton.layer.cornerRadius = _takePhotoButton.bounds.width / 2
-        _takePhotoButton.layer.borderWidth = 2
-        _takePhotoButton.layer.borderColor = UIColor.black.cgColor
         
-        //Initialize barcode scanner
-        let format = VisionBarcodeFormat.all
-        let barcodeOptions = VisionBarcodeDetectorOptions(formats: format)
+        //Setup status view to prompt the user of any issues
+        let statusRect = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
+        statusView = UIView(frame: statusRect)
+        statusView.layer.backgroundColor = UIColor.blue.cgColor
+        self._cameraPreview.setAdditionalTopOffsetAmount(By: statusRect.height)
+        self._cameraPreview.addSubview(statusView)
         
-        var vision = Vision.vision()
-        barcodeDetector = vision.barcodeDetector(options: barcodeOptions)
-        
-        // toggle photo button highlight
-        _takePhotoObserver = observe(
-            \VisionController._takePhotoButton.isHighlighted,
-            options: [.new, .old]
-        ) {
-            [unowned self]
-            object, change in
-            
-            let highlighted = change.newValue ?? false
-            self._takePhotoButton.layer.opacity = highlighted
-                ? 0.5
-                : 1.0
-        }
-        
-        _cameraFeed.videoSamples
-            .throttle(2, scheduler: ConcurrentMainScheduler.instance)
-            .subscribe(
-                onNext: {
-                    [unowned self]
-                    image in
-                    
-                    let _visionImage = VisionImage(image: image)
-                    
-                    // Set the native image Height / Width
-                    if(self._nativeImageWidth == nil) {
-                        self._nativeImageWidth = image.size.width
-                    }
-                    if(self._nativeImageHeight == nil) {
-                        self._nativeImageHeight = image.size.height
-                    }
-
-                    self.barcodeDetector.detect(in: _visionImage) {
-                        features, error in
-                        
-                        guard error == nil, let features = features, !features.isEmpty else {
-                            self._promptLabel.text = "No full barcode within view"
-                            return
-                        }
-                        
-                        if(features.count != self.NUM_OF_BARCODES) {
-                            self._promptLabel.text = "Please have both barcodes clearly visible \n in camera"
-                            return
-                        }
-                        
-                        // Flag to determin if any read barcode is invalid / can't be read
-                        var isValid = true
-                        
-                        /*
-                         Date Barcode Raw Value: e.g 1991/04/29
-                         CertificateNo Raw Value: e.g K9548487
-                         */
-                        for feature in features {
-                            // If an invalid barcode was scanned, no need to continue
-                            if (!isValid) {
-                                break
-                            }
-                            
-                            // Figure out which container the barcode belongs to
-                            let barcodeTopLeft =  self._cameraPreview.translateImagePointToPreviewLayer(forPoint: feature.cornerPoints![0].cgPointValue, relativeTo: image.size)
-                            var _containerView: UIView!
-                            
-                            // If the top left of the barcode is further past the right border of the the certificate view, assume barcode is for DoB
-                            if(barcodeTopLeft.x > self._certificateBarcodeReader.frame.origin.x + self._certificateBarcodeReader.frame.width) {
-                                _containerView = self._birthdayBarcodeReader
-                            } else {
-                                // Otherwise assume barcode is for Certificate No
-                                _containerView = self._certificateBarcodeReader
-                            }
-                            
-                            let barcodeType = self.getBarcodeType(barcode: feature)
-                            // Check if barcode is within view
-                            let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
-                            if validBarcode {
-                                self._promptLabel.text?.append("\n Barcode type: \(barcodeType)")
-                            } else {
-                                // If any of the barcodes fail, false flag
-                                isValid = false
-                            }
-                        }
-                        
-                        // Both Barcodes were read successfully
-                        if(isValid) {
-                            self._promptLabel.text? = "Yay both barcodes read!"
-                            
-                        }
-                    }
-            },
-                onError: {
-                    error in
-                    print("error")
-            }
-        )
-        .disposed(by: _disposeBag)
     }
 
     override func viewDidLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
+        
+        let previewFrame = self._cameraPreview.frame
+        
+        /*  Each barcode reader view will be 50% of total view width minus padding
+            5 padding from border on either side + 20 adding between both rects = 30
+         */
+        let barcodeRectWidth = (self._cameraPreview.frame.width - 30) / 2
+        let barcodeRectHeight: CGFloat = 40
+        
+        let yOffset: CGFloat = (previewFrame.origin.y + (barcodeRectHeight / 2))
+        
         // Setup rects for both barcode reader views
-        let certificatBarcodeRect = CGRect(x: 10, y: 450, width: 150, height: 40)
-        let birthdayBarcodeRect = CGRect(x: 210, y:450, width: 150, height: 40)
+        let certificateBarcodeRect = CGRect(x: previewFrame.origin.x + 5,
+                                           y: (previewFrame.height - previewFrame.origin.y) - yOffset,
+                                           width: barcodeRectWidth,
+                                           height: barcodeRectHeight)
         
-        _certificateBarcodeReader = UIView(frame: certificatBarcodeRect)
+        let birthdayBarcodeRect = CGRect(x: (certificateBarcodeRect.origin.x + barcodeRectWidth) + 20,
+                                         y:(previewFrame.height - previewFrame.origin.y) - yOffset,
+                                         width: barcodeRectWidth,
+                                         height: barcodeRectHeight)
+        
+        _certificateBarcodeReader = UIView(frame: certificateBarcodeRect)
         _birthdayBarcodeReader = UIView(frame: birthdayBarcodeRect)
-        
-        _promptLabel = UILabel(frame: CGRect(x: 10, y: self.view.frame.height - 200, width: self.view.frame.width, height: 50))
+
+        _promptLabel = UILabel(frame: CGRect(x: 10, y: 5, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
         
         //Configure prompt label
-        _promptLabel.textAlignment = NSTextAlignment.center
-        _promptLabel.textColor = UIColor.red;
+        _promptLabel.contentMode = .scaleToFill
+        _promptLabel.textColor = UIColor.white;
         _promptLabel.numberOfLines = 0
         _promptLabel.text = ""
+        _promptLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 12)
+        _promptLabel.layer.zPosition = 1
+        
+        //Configure Barcode Label
+        certificateBarcodeLabel = UILabel(frame: CGRect(x: certificateBarcodeRect.origin.x,
+                                              y: certificateBarcodeRect.origin.y - 20,
+                                              width: certificateBarcodeRect.size.width,
+                                              height: 15))
+        
+        certificateBarcodeLabel.contentMode = .scaleToFill
+        certificateBarcodeLabel.textColor = UIColor.white
+        certificateBarcodeLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 16)
+        certificateBarcodeLabel.text = "Barcode"
+        certificateBarcodeLabel.layer.zPosition = 1
+        
+        // Copy over certificate label and change origin x for birthday
+        birthdayBarcodeLabel = UILabel(frame: CGRect(x: birthdayBarcodeRect.origin.x,
+                                                        y: birthdayBarcodeRect.origin.y - 20,
+                                                        width: birthdayBarcodeRect.size.width,
+                                                        height: 15))
+        
+        birthdayBarcodeLabel.contentMode = .scaleToFill
+        birthdayBarcodeLabel.textColor = UIColor.white
+        birthdayBarcodeLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 16)
+        birthdayBarcodeLabel.text = "Barcode"
+        birthdayBarcodeLabel.layer.zPosition = 1
         
         // Set certificate and birthday View properties
         _certificateBarcodeReader.layer.borderWidth = 1.0
         _certificateBarcodeReader.layer.borderColor = UIColor.black.cgColor
         _certificateBarcodeReader.layer.backgroundColor = UIColor.clear.cgColor
+        _certificateBarcodeReader.layer.zPosition = 1
         
         _birthdayBarcodeReader.layer.borderWidth = 1.0
         _birthdayBarcodeReader.layer.borderColor = UIColor.black.cgColor
         _birthdayBarcodeReader.layer.backgroundColor = UIColor.clear.cgColor
+        _birthdayBarcodeReader.layer.zPosition = 1
         
         // Add certificate and birthday view to cameraPreview
         self._cameraPreview.addSubview(_certificateBarcodeReader)
         self._cameraPreview.addSubview(_birthdayBarcodeReader)
+        self._cameraPreview.addSubview(certificateBarcodeLabel)
+        self._cameraPreview.addSubview(birthdayBarcodeLabel)
         
-        self.view.addSubview(_promptLabel)
+        self.statusView.addSubview(_promptLabel)
+        
+        // Show initial status to prompt the user
+        self.showStatusView(statusText: "Scanning document to validate. Please line up with guides", isError: false)
+        initializeCameraFeedVideoSampler()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -230,55 +250,143 @@ class VisionController: UIViewController {
         super.viewWillAppear(animated)
     }
     
-    func isValidBarcodeInView(barcode: VisionBarcode, barcodeType: BarcodeType, containerView: UIView, imageSize: CGSize) -> Bool {
+    private func initializeCameraFeedVideoSampler() {
+        //Initialize barcode scanner
+        let format = VisionBarcodeFormat.all
+        let barcodeOptions = VisionBarcodeDetectorOptions(formats: format)
+        
+        var vision = Vision.vision()
+        barcodeDetector = vision.barcodeDetector(options: barcodeOptions)
+        
+        _cameraFeed.videoSamples
+                .throttle(3.5, scheduler: ConcurrentMainScheduler.instance)
+                .subscribe(
+                    onNext: {
+                        [unowned self]
+                        image in
+                        self.showStatusView(statusText: "Attempting to capture image", isError: false)
+                        if(!self.shouldScan) {
+                            
+                            return
+                        }
+                        let _visionImage = VisionImage(image: image)
+                        self.barcodeDetector.detect(in: _visionImage) {
+                            features, error in
+                            
+                            guard error == nil, let features = features, !features.isEmpty else {
+                                self.showStatusView(statusText: "No full barcode within view", isError: true)
+                                return
+                            }
+                            
+                            if(features.count != self.NUM_OF_BARCODES) {
+                                self.showStatusView(statusText: "Please have both barcodes clearly visible in camera", isError: true)
+                                return
+                            }
+                            
+                            // Flag to determin if any read barcode is invalid / can't be read
+                            var isValid = true
+                            var statusText: String = ""
+                            
+                            /*
+                             Date Barcode Raw Value: e.g 1991/04/29
+                             CertificateNo Raw Value: e.g K9548487
+                             */
+                            for feature in features {
+                                // If an invalid barcode was scanned, no need to continue
+                                if (!isValid) {
+                                    break
+                                }
+                                
+                                // Figure out which container the barcode belongs to
+                                let barcodeTopLeft =  self._cameraPreview.translateImagePointToPreviewLayer(forPoint: feature.cornerPoints![0].cgPointValue, relativeTo: image.size)
+                                var _containerView: UIView!
+                                
+                                // If the top left of the barcode is further past the right border of the the certificate view, assume barcode is for DoB
+                                if(barcodeTopLeft.x > self._certificateBarcodeReader.frame.origin.x + self._certificateBarcodeReader.frame.width) {
+                                    _containerView = self._birthdayBarcodeReader
+                                } else {
+                                    // Otherwise assume barcode is for Certificate No
+                                    _containerView = self._certificateBarcodeReader
+                                }
+                                
+                                let barcodeType = self.getBarcodeType(barcode: feature)
+                                // Check if barcode is within view
+                                let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
+                                if !validBarcode.isValid {
+                                    // If any of the barcodes fail, false flag
+                                    isValid = false
+                                    statusText = validBarcode.statusText
+                                }
+                            }
+                            
+                            // Both Barcodes were read successfully
+                            if(isValid) {
+                                statusText = "Yay both barcodes read!"
+                                self.takeImagePhoto()
+                            }
+                            self.showStatusView(statusText: statusText, isError: !isValid)
+                        }
+                    },
+                    onError: {
+                        error in
+                        print("error")
+                }
+                )
+                .disposed(by: self._disposeBag)
+ 
+    }
+    
+    private func takeImagePhoto(){
+        self._cameraFeed.takePhoto()
+            .subscribeOn(ConcurrentMainScheduler.instance)
+            .subscribe(onSuccess: {
+                [unowned self]
+                image in
+                
+                if let fixedImage = image.fixedOrientation() {
+                    self.showStatusView(statusText: "Successfully captured Photo", isError: false)
+                    self.shouldScan = false;
+                    self.readImageText(image: fixedImage)
+                }
+            }, onError: {
+                error in
+                print("Capture photo error \(error)")
+                self.showStatusView(statusText: "Capture Photo Error: \(error)", isError: true)
+            })
+    }
+    
+    private func readImageText(image: UIImage) {
+        let vision = Vision.vision()
+        
+        let textRecognizer = vision.onDeviceTextRecognizer()
+        
+        let image = VisionImage(image: image)
+        
+        textRecognizer.process(image) {
+            [unowned self]
+            result, error in
+            guard error == nil, let result = result else {
+                
+                return
+            }
+            
+            for block in result.blocks {
+                print("Block: \(block.text)")
+            }
+        }
+        
+    }
+    
+    private func isValidBarcodeInView(barcode: VisionBarcode, barcodeType: BarcodeType, containerView: UIView, imageSize: CGSize) -> (isValid: Bool, statusText: String) {
         // Initialize valid flag as false
         var isValid = false
+        var statusText: String = ""
         
         let barcodeTopLeft = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![0].cgPointValue, relativeTo: imageSize)
         let barcodeBottomLeft = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![3].cgPointValue, relativeTo: imageSize)
         let barcodeTopRight = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![1].cgPointValue, relativeTo: imageSize)
         let barcodeBottomRight = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![2].cgPointValue, relativeTo: imageSize)
 
-        // Rect around the scanned barcode
-        let barcodeRect = CGRect(x: barcodeTopLeft.x, y: barcodeTopLeft.y, width: barcodeTopRight.x - barcodeTopLeft.x, height: barcodeBottomRight.y - barcodeTopRight.y)
-        if(barcodeType == BarcodeType.DateOfBirth) {
-            print("---- Date of Birth -----")
-            print("Barcode Corner Points: \(String(describing: barcode.cornerPoints))")
-            print("Top Left: \(barcodeTopLeft)")
-            print("Bottom Left: \(barcodeBottomLeft)")
-            print("Top Right: \(barcodeTopRight)")
-            print("Bottom Right: \(barcodeBottomRight)")
-
-            print("Barcode Type: \(barcodeType), Rect: \(barcodeRect)")
-
-        } else {
-            print("---- Certificate No -----")
-            print("Barcode Corner Points: \(String(describing: barcode.cornerPoints))")
-            print("Top Left: \(barcodeTopLeft)")
-            print("Bottom Left: \(barcodeBottomLeft)")
-            print("Top Right: \(barcodeTopRight)")
-            print("Bottom Right: \(barcodeBottomRight)")
-            
-            print("Barcode Type: \(barcodeType), Rect: \(barcodeRect)")
-
-        }
-        
-        let barcodeView = UIView(frame: barcodeRect)
-        
-        // Remove old barcode view from camera preview
-        let id = barcodeType == BarcodeType.CertificateNo ? BarcodeTypeId.CertificateNo.rawValue : BarcodeTypeId.DateOfBirth.rawValue
-        if let oldBarcodeView = self._cameraPreview.viewWithTag(id) {
-            oldBarcodeView.removeFromSuperview()
-        }
-        
-        // Set barcode tag and props
-        barcodeView.tag = id
-        barcodeView.layer.borderWidth = 2
-        barcodeView.layer.borderColor = UIColor.blue.cgColor
-        
-        // Add barcode rect view onto the camera preview
-        self._cameraPreview.addSubview(barcodeView)
-        
         //Get container view Origin point relative to the camera preview view
         let viewOriginX = containerView.frame.origin.x
         let viewOriginY = containerView.frame.origin.y
@@ -288,25 +396,25 @@ class VisionController: UIViewController {
         
         // If the barcode is above the container view
         if(barcodeBottomLeft.y < (viewOriginY - CGFloat(self.Y_VALID_MARGIN))) {
-            self._promptLabel.text = "Move \(barcodeType) camera up"
+            statusText = "Move camera up"
         } else if (barcodeBottomLeft.y > (viewOriginY + viewHeight + CGFloat(self.Y_VALID_MARGIN))) {
             // If the barcode is below the container view
-            self._promptLabel.text = "Move \(barcodeType) Camera Down"
+            statusText = "Move Camera Down"
         } else if (barcodeBottomLeft.x < (viewOriginX + CGFloat(self.X_VALID_MARGIN))) {
             // If the barcode is to the left of the container view
-            self._promptLabel.text = "Move \(barcodeType) Camera to the Left"
+            statusText = "Move Camera to the Left"
         } else if (barcodeTopRight.x > (viewOriginX + viewWidth + CGFloat(self.X_VALID_MARGIN))) {
             // If the barcode is to the right of the container view
-            self._promptLabel.text = "Move \(barcodeType) Camera to the Right"
+            statusText = "Move Camera to the Right"
         } else {
             // Barcode is within the correct container, yay
             isValid = true
         }
         
-        return isValid
+        return (isValid, statusText)
     }
     
-    func getBarcodeType(barcode: VisionBarcode) -> BarcodeType{
+    private func getBarcodeType(barcode: VisionBarcode) -> BarcodeType{
         let rawValue = barcode.rawValue
         // If no value can be read, return invalid type
         if(rawValue == nil) {
@@ -325,26 +433,16 @@ class VisionController: UIViewController {
         
     }
     
-    
-    /*
-        Calculate the percent difference of image width/heigh vs the camera preview witdh/height
-        Use offset to convert cornerPoints of barcodes to proper view scale
-     */
-    func getImagePointOffset(barcodePoint: CGPoint) -> CGPoint {
+    private func showStatusView(statusText: String, isError: Bool) {
         
-        // Width and height of the camera preview
-        let previewWidth = self._cameraPreview.frame.width
-        let previewHeight = self._cameraPreview.frame.height
+        if(isError) {
+            self.statusView.layer.backgroundColor = UIColor.red.cgColor
+        } else {
+            self.statusView.layer.backgroundColor = UIColor(red: 0, green: 0.5294, blue: 1, alpha: 1.0).cgColor
+        }
         
-
-        // Difference in width and height between the camera preview view and the native image containing the barcode
-        let widthPercentDiff = Float32(previewWidth) / Float32(self._nativeImageWidth!)
-        let heightPercentDiff = Float32(previewHeight) / Float32(self._nativeImageHeight!)
-       
-        return CGPoint(x: barcodePoint.x * CGFloat(widthPercentDiff), y: barcodePoint.y * CGFloat(heightPercentDiff))
-        
+        self._promptLabel?.text = statusText
     }
-    
     
     @IBAction func toggleCameraPosition() {
         

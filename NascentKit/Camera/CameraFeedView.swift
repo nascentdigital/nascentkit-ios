@@ -10,6 +10,7 @@ public class CameraFeedView: UIView {
     private var _innerContainerSize: CGRect!
     private var _lastOffset: CGFloat!
     private var _previewLayerRectConverted: CGRect!
+    private var _additionalTopOffset: CGFloat! = 0
     
     public override init(frame: CGRect) {
     
@@ -37,7 +38,7 @@ public class CameraFeedView: UIView {
         previewLayer.session = cameraFeed.captureSession
         
         // position layer
-        previewLayer.backgroundColor = UIColor.green.cgColor
+        previewLayer.backgroundColor = UIColor.purple.cgColor
         previewLayer.videoGravity = .resizeAspect
         
         // show
@@ -74,7 +75,7 @@ public class CameraFeedView: UIView {
                         fromCaptureDevicePoint: CGPoint(x: 0, y: 0)).y
                 
                 // update constraints
-                self._dyConstraint.constant = -self._lastOffset
+                self._dyConstraint.constant = -self._lastOffset + self._additionalTopOffset
                 
                 // Update preview layer converted rect anytime the subviews layout changes
                 self.updatePreviewLayerRectConverted()
@@ -110,7 +111,7 @@ public class CameraFeedView: UIView {
                             fromCaptureDevicePoint: CGPoint(x: 0, y: 0)).y
                     
                     // update constraints
-                    self._dyConstraint.constant = -newOffset
+                    self._dyConstraint.constant = -newOffset + self._additionalTopOffset
                     
                     // if the new size is different
                     if (newInnerContainerSize != self._innerContainerSize) {
@@ -147,7 +148,7 @@ public class CameraFeedView: UIView {
                                            relatedBy: .equal,
                                            toItem: self, attribute: .centerY,
                                            multiplier: 1.0, constant: 0.0)
-        
+
         // bind constraints
         addConstraints([
             _dxConstraint,
@@ -161,6 +162,7 @@ public class CameraFeedView: UIView {
                                toItem: self, attribute: .height,
                                multiplier: 1.0, constant:0.0)
         ])
+        
     }
     
     /*
@@ -203,7 +205,7 @@ public class CameraFeedView: UIView {
             .translatedBy(x: -_previewLayerRectConverted.width, y: self._dyConstraint.constant)
 
         // Convert the point from the capture device coordinate system to the previewLayer's
-        var translatedPoint = previewLayer.layerPointConverted(fromCaptureDevicePoint: relativePoint)
+        let translatedPoint = previewLayer.layerPointConverted(fromCaptureDevicePoint: relativePoint)
         
         // Apply the transform on the translated point
         return translatedPoint.applying(transform)
@@ -219,5 +221,23 @@ public class CameraFeedView: UIView {
                       y: rect.origin.y - self._dyConstraint.constant,
                       width: rect.width,
                       height: rect.height)
+    }
+    
+    /*
+        Adds an additional offset from the top by the given amount
+        Caller may show a banner/view on top of screen, need to add offset of added view height
+        so camera feed doesn't display under the newly added view
+    */
+    public func setAdditionalTopOffsetAmount(By amount: CGFloat) {
+        
+        // Saves the additional top offset and triggers layout
+        _additionalTopOffset = amount;
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+    
+    public func getYOffset() -> CGFloat {
+        return _capturePreview.previewLayer.layerPointConverted(
+            fromCaptureDevicePoint: CGPoint(x: 0, y: 0)).y
     }
 }
