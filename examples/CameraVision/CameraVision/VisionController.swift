@@ -77,6 +77,18 @@ extension UIImage {
     }
 }
 
+enum BarcodeType: String {
+    case CertificateNo = "CertificateNo"
+    case DateOfBirth = "DateOfBirth"
+    case Invalid = "Invalid"
+}
+
+enum BarcodeTypeId: Int {
+    case CertificateNo = 1
+    case DateOfBirth = 2
+    case Invalid = -1
+}
+
 enum StatusColors {
     case infoColor
     case successColor
@@ -93,11 +105,11 @@ extension StatusColors {
         get {
             switch self {
             case .infoColor :
-                return UIColor(red: 4/255, green: 30/255, blue: 66/255, alpha: 1)
+                return UIColor(red: 5/255, green: 31/255, blue: 65/255, alpha: 1)
             case .successColor:
                 return UIColor(red: 5/255, green: 74/255, blue: 170/255, alpha: 1)
             case .errorColor:
-                return UIColor(red: 239/255, green: 8/255, blue: 3/255, alpha: 1)
+                return UIColor(red: 196/255, green: 22/255, blue: 133/255, alpha: 1)
             default:
                 return UIColor.clear
             }
@@ -119,19 +131,27 @@ extension StatusIcons {
         }
     }
 }
+
+// Extension to get user friendly full name of barcode
+extension BarcodeType {
+    var name: String {
+        get {
+            switch self {
+            case .CertificateNo:
+                return "Certificate No."
+            case .DateOfBirth:
+                return "Date of Birth"
+            case .Invalid:
+                return "Invalid"
+            default:
+                return ""
+            }
+        }
+    }
+}
+
+
 class VisionController: UIViewController {
-    
-    enum BarcodeType: String {
-        case CertificateNo = "CertificateNo"
-        case DateOfBirth = "DateOfBirth"
-        case Invalid = "Invalid"
-    }
-    
-    enum BarcodeTypeId: Int {
-        case CertificateNo = 1
-        case DateOfBirth = 2
-        case Invalid = -1
-    }
 
     let X_VALID_MARGIN: Int = 5
     let Y_VALID_MARGIN: Int = 5
@@ -194,23 +214,21 @@ class VisionController: UIViewController {
         let barcodeRectWidth = (self._cameraPreview.frame.width - 30) / 2
         let barcodeRectHeight: CGFloat = 40
         
-        let yOffset: CGFloat = 111//(previewFrame.origin.y + (barcodeRectHeight / 2))
-        
         // Setup rects for both barcode reader views
         let certificateBarcodeRect = CGRect(x: previewFrame.origin.x + 5,
-                                           y: (previewFrame.height - previewFrame.origin.y) - yOffset,
+                                           y: (previewFrame.height - previewFrame.origin.y),
                                            width: barcodeRectWidth,
                                            height: barcodeRectHeight)
         
         let birthdayBarcodeRect = CGRect(x: (certificateBarcodeRect.origin.x + barcodeRectWidth) + 20,
-                                         y:(previewFrame.height - previewFrame.origin.y) - yOffset,
+                                         y:(previewFrame.height - previewFrame.origin.y),
                                          width: barcodeRectWidth,
                                          height: barcodeRectHeight)
         
         _certificateBarcodeReader = UIView(frame: certificateBarcodeRect)
         _birthdayBarcodeReader = UIView(frame: birthdayBarcodeRect)
 
-        _promptLabel = UILabel(frame: CGRect(x: 10, y: 0, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
+        _promptLabel = UILabel(frame: CGRect(x: 50, y: 0, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
         
         //Configure prompt label
         _promptLabel.contentMode = .scaleToFill
@@ -219,6 +237,12 @@ class VisionController: UIViewController {
         _promptLabel.text = ""
         _promptLabel.font = UIFont(name: "AppleSDGothicNeo-Thin", size: 14)
         _promptLabel.layer.zPosition = 1
+        
+        // Configure the Scan button
+        scanButton.layer.cornerRadius = 20
+        scanButton.layer.backgroundColor = UIColor(red: 4/255, green: 26/255, blue: 55/255, alpha: 1).cgColor
+        scanButton.setTitleColor(UIColor.white, for: .normal)
+        view.bringSubviewToFront(scanButton)
         
         //Configure Barcode Label
         certificateBarcodeLabel = UILabel(frame: CGRect(x: certificateBarcodeRect.origin.x,
@@ -264,7 +288,7 @@ class VisionController: UIViewController {
         self.statusView.addSubview(_promptLabel)
         
         // Show initial status to prompt the user
-        self.showStatusView(statusText: "Scanning document to validate. Please line up with guides", isError: false)
+        self.showStatusView(statusText: "Scanning document to validate. \nPlease line up with guides", isError: false)
         
         // Delay to start the camera feed
 
@@ -282,9 +306,9 @@ class VisionController: UIViewController {
         
             // start camera feed
             try _cameraFeed.start(cameraPosition: _cameraDirection)
-
+            
             // start camera preview
-            _cameraPreview.startPreview(cameraFeed: _cameraFeed)
+            _cameraPreview.startPreview(cameraFeed: _cameraFeed, videoGravity: AVLayerVideoGravity.resizeAspectFill)
         }
         
         catch {
@@ -339,12 +363,7 @@ class VisionController: UIViewController {
             features, error in
             
             guard error == nil, let features = features, !features.isEmpty else {
-                self.showStatusView(statusText: "No full barcode within view", isError: true)
-                return
-            }
-            
-            if(features.count != self.NUM_OF_BARCODES) {
-                self.showStatusView(statusText: "Please have both barcodes clearly visible in camera", isError: true)
+                // self.showStatusView(statusText: "No full barcode within view", isError: true)
                 return
             }
             
@@ -378,7 +397,16 @@ class VisionController: UIViewController {
                     _containerView = self._certificateBarcodeReader
                 }
                 
+
                 let barcodeType = self.getBarcodeType(barcode: feature)
+                
+                // If both barcodes havn't been picked up, prompt the user of the missing barcode
+                if(features.count != self.NUM_OF_BARCODES) {
+                    let missingBarcode = barcodeType == BarcodeType.CertificateNo ? BarcodeType.DateOfBirth.name : BarcodeType.CertificateNo.name
+                    self.showStatusView(statusText: "One barcode detected. \nPlease move document so \(missingBarcode) is in view", isError: false)
+                    return
+                }
+                
                 // Check if barcode is within view
                 let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
                 if !validBarcode.isValid {
@@ -513,18 +541,19 @@ class VisionController: UIViewController {
                 self?.statusView.layer.backgroundColor = StatusColors.errorColor.value.cgColor
                 icon = StatusIcons.errorIcon.value
             } else {
-                self?.statusView.layer.backgroundColor = StatusColors.successColor.value.cgColor
-                icon = StatusIcons.successIcon.value
+                self?.statusView.layer.backgroundColor = StatusColors.infoColor.value.cgColor
+                // icon = StatusIcons.infoIcon.value
             }
             
             // Load icon to be displayed with text
             let iconAttachment = NSTextAttachment()
             iconAttachment.image = icon
             let iconString = NSAttributedString(attachment: iconAttachment)
-            
-            // Add a tab between icon and status text
-            let displayedText = "\t" + statusText
-            let stringText = NSAttributedString(string: displayedText)
+            var displayString = statusText
+            if(icon != nil) {
+                displayString = "\t" + statusText
+            }
+            let stringText = NSAttributedString(string: displayString)
             let mutableAttachmentString = NSMutableAttributedString(attributedString: iconString)
             mutableAttachmentString.append(stringText)
             

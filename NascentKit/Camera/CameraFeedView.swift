@@ -1,6 +1,6 @@
 import Foundation
 import UIKit
-
+import AVFoundation.AVSampleBufferDisplayLayer
 
 public class CameraFeedView: UIView {
 
@@ -31,7 +31,7 @@ public class CameraFeedView: UIView {
     }
 
     
-    public func startPreview(cameraFeed: CameraFeed) {
+    public func startPreview(cameraFeed: CameraFeed, videoGravity: AVLayerVideoGravity?) {
     
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
@@ -40,7 +40,8 @@ public class CameraFeedView: UIView {
         
         // position layer
         previewLayer.backgroundColor = UIColor.clear.cgColor
-        previewLayer.videoGravity = .resizeAspect
+        // If passed in videoGravity value, use it. Otherwise default to .resizeAspect
+        previewLayer.videoGravity =  videoGravity ?? .resizeAspect
         
         // show
         isHidden = false
