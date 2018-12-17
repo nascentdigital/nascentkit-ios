@@ -156,7 +156,7 @@ class VisionController: UIViewController {
     let X_VALID_MARGIN: Int = 5
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
-    let MANUAL_SCAN_WAIT_TIME = 5.0
+    let MANUAL_SCAN_WAIT_TIME = 15.0
     
     @IBOutlet weak var _cameraPreview: CameraFeedView!
     @IBOutlet weak var _certificateLabel: UILabel!
@@ -176,13 +176,11 @@ class VisionController: UIViewController {
     private var _takePhotoObserver: NSKeyValueObservation?
     private var barcodeDetector: VisionBarcodeDetector!
     private let _disposeBag = DisposeBag()
-    private var _nativeImageSize: CGSize?
-    private var _imageXOffset: Int!
-    private var _imageYOffset: Int!
     
     private var needValuesFrom = (barcode: true, ocr: true)
     private var finalFullImage: UIImage?
     
+    private var shouldScan: Bool! = true
     override func viewDidLoad() {
         
         // call base implementation
@@ -339,6 +337,14 @@ class VisionController: UIViewController {
         
         _cameraFeed.videoSamples
                 .throttle(3.5, scheduler: SerialDispatchQueueScheduler(qos: .userInitiated))
+                // Skip first Observable call so user has time to position camera
+                .skip(1)
+                .takeWhile({
+                    [unowned self]
+                    (UIImage) -> Bool in
+                    // Continue to observe the video sample until the flag 'shouldScan' becomes false
+                    return self.shouldScan
+                })
                 .subscribe(
                     onNext: {
                         [unowned self]
@@ -363,13 +369,23 @@ class VisionController: UIViewController {
             features, error in
             
             guard error == nil, let features = features, !features.isEmpty else {
-                // self.showStatusView(statusText: "No full barcode within view", isError: true)
+                self.showStatusView(statusText: "No full barcode within view \n Please reposition until both barcodes are within view", isError: true)
                 return
             }
             
             // Flag to determin if any read barcode is invalid / can't be read
             var isValid = true
             var statusText: String = ""
+            
+            // If both barcodes havn't been picked up, prompt the user of the missing barcode
+            if(features.count != self.NUM_OF_BARCODES) {
+                let barcodeType = self.getBarcodeType(barcode: features.first)
+
+                isValid = false
+                let missingBarcode = barcodeType == BarcodeType.CertificateNo ? BarcodeType.DateOfBirth.name : BarcodeType.CertificateNo.name
+                self.showStatusView(statusText: "One barcode detected. \nPlease move document so \(missingBarcode) is in view", isError: false)
+                return
+            }
             
             /*
              Date Barcode Raw Value: e.g 1991/04/29
@@ -399,13 +415,6 @@ class VisionController: UIViewController {
                 
 
                 let barcodeType = self.getBarcodeType(barcode: feature)
-                
-                // If both barcodes havn't been picked up, prompt the user of the missing barcode
-                if(features.count != self.NUM_OF_BARCODES) {
-                    let missingBarcode = barcodeType == BarcodeType.CertificateNo ? BarcodeType.DateOfBirth.name : BarcodeType.CertificateNo.name
-                    self.showStatusView(statusText: "One barcode detected. \nPlease move document so \(missingBarcode) is in view", isError: false)
-                    return
-                }
                 
                 // Check if barcode is within view
                 let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
@@ -478,6 +487,11 @@ class VisionController: UIViewController {
     }
     
     private func isValidBarcodeInView(barcode: VisionBarcode, barcodeType: BarcodeType, containerView: UIView, imageSize: CGSize) -> (isValid: Bool, statusText: String) {
+        
+        if(barcodeType == BarcodeType.Invalid) {
+            return (false, "Invalid barcode detected")
+        }
+        
         // Initialize valid flag as false
         var isValid = false
         var statusText: String = ""
@@ -514,8 +528,13 @@ class VisionController: UIViewController {
         return (isValid, statusText)
     }
     
-    private func getBarcodeType(barcode: VisionBarcode) -> BarcodeType{
-        let rawValue = barcode.rawValue
+    private func getBarcodeType(barcode: VisionBarcode?) -> BarcodeType{
+        
+        if(barcode == nil) {
+            return BarcodeType.Invalid
+        }
+        
+        let rawValue = barcode!.rawValue
         // If no value can be read, return invalid type
         if(rawValue == nil) {
             return BarcodeType.Invalid
@@ -569,6 +588,8 @@ class VisionController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + self.MANUAL_SCAN_WAIT_TIME) {
             [weak self] in
             self?.scanButton.isHidden = false
+            self?.shouldScan = false
+            self?.showStatusView(statusText: "Cannnot auto-scan. Please capture manually", isError: false)
         }
     }
     
