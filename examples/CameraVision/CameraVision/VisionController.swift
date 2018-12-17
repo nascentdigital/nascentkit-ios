@@ -137,8 +137,6 @@ class VisionController: UIViewController {
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
     let MANUAL_SCAN_WAIT_TIME = 5.0
-    var shouldScan: Bool = true;
-    
     
     @IBOutlet weak var _cameraPreview: CameraFeedView!
     @IBOutlet weak var _certificateLabel: UILabel!
@@ -162,6 +160,9 @@ class VisionController: UIViewController {
     private var _imageXOffset: Int!
     private var _imageYOffset: Int!
     
+    private var needValuesFrom = (barcode: true, ocr: true)
+    private var finalFullImage: UIImage?
+    
     override func viewDidLoad() {
         
         // call base implementation
@@ -170,7 +171,9 @@ class VisionController: UIViewController {
         // Hide scan button on first load until user doesnt take proper photo
         self.scanButton.isHidden = true
         
-        self.view.backgroundColor = UIColor(patternImage: UIImage(named: "background.png")!)
+        // self.view.backgroundColor = UIColor(patternImage: UIImage(named: "background.png")!)
+        self.view.layer.contents = UIImage(named: "background.png")?.cgImage
+        
         //Setup status view to prompt the user of any issues
         let statusRect = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
         statusView = UIView(frame: statusRect)
@@ -191,7 +194,7 @@ class VisionController: UIViewController {
         let barcodeRectWidth = (self._cameraPreview.frame.width - 30) / 2
         let barcodeRectHeight: CGFloat = 40
         
-        let yOffset: CGFloat = (previewFrame.origin.y + (barcodeRectHeight / 2))
+        let yOffset: CGFloat = 111//(previewFrame.origin.y + (barcodeRectHeight / 2))
         
         // Setup rects for both barcode reader views
         let certificateBarcodeRect = CGRect(x: previewFrame.origin.x + 5,
@@ -311,72 +314,15 @@ class VisionController: UIViewController {
         barcodeDetector = vision.barcodeDetector(options: barcodeOptions)
         
         _cameraFeed.videoSamples
-                .throttle(3.5, scheduler: ConcurrentMainScheduler.instance)
+                .throttle(3.5, scheduler: SerialDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(
                     onNext: {
                         [unowned self]
                         image in
-                        if(!self.shouldScan) {
-                            // End subscription here (how?)
+                        if(!self.needValuesFrom.barcode) {
                             return
                         }
-                        let _visionImage = VisionImage(image: image)
-                        self.barcodeDetector.detect(in: _visionImage) {
-                            features, error in
-                            
-                            guard error == nil, let features = features, !features.isEmpty else {
-                                self.showStatusView(statusText: "No full barcode within view", isError: true)
-                                return
-                            }
-                            
-                            if(features.count != self.NUM_OF_BARCODES) {
-                                self.showStatusView(statusText: "Please have both barcodes clearly visible in camera", isError: true)
-                                return
-                            }
-                            
-                            // Flag to determin if any read barcode is invalid / can't be read
-                            var isValid = true
-                            var statusText: String = ""
-                            
-                            /*
-                             Date Barcode Raw Value: e.g 1991/04/29
-                             CertificateNo Raw Value: e.g K9548487
-                             */
-                            for feature in features {
-                                // If an invalid barcode was scanned, no need to continue
-                                if (!isValid) {
-                                    break
-                                }
-                                
-                                // Figure out which container the barcode belongs to
-                                let barcodeTopLeft =  self._cameraPreview.translateImagePointToPreviewLayer(forPoint: feature.cornerPoints![0].cgPointValue, relativeTo: image.size)
-                                var _containerView: UIView!
-                                
-                                // If the top left of the barcode is further past the right border of the the certificate view, assume barcode is for DoB
-                                if(barcodeTopLeft.x > self._certificateBarcodeReader.frame.origin.x + self._certificateBarcodeReader.frame.width) {
-                                    _containerView = self._birthdayBarcodeReader
-                                } else {
-                                    // Otherwise assume barcode is for Certificate No
-                                    _containerView = self._certificateBarcodeReader
-                                }
-                                
-                                let barcodeType = self.getBarcodeType(barcode: feature)
-                                // Check if barcode is within view
-                                let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
-                                if !validBarcode.isValid {
-                                    // If any of the barcodes fail, false flag
-                                    isValid = false
-                                    statusText = validBarcode.statusText
-                                }
-                            }
-                            
-                            // Both Barcodes were read successfully
-                            if(isValid) {
-                                statusText = "Yay both barcodes read!"
-                                self.takeImagePhoto()
-                            }
-                            self.showStatusView(statusText: statusText, isError: !isValid)
-                        }
+                        self.detectBarcodeInImage(image: image)
                     },
                     onError: {
                         error in
@@ -387,8 +333,76 @@ class VisionController: UIViewController {
  
     }
     
+    private func detectBarcodeInImage(image: UIImage) {
+        let visionImage = VisionImage(image: image)
+        self.barcodeDetector.detect(in: visionImage) {
+            features, error in
+            
+            guard error == nil, let features = features, !features.isEmpty else {
+                self.showStatusView(statusText: "No full barcode within view", isError: true)
+                return
+            }
+            
+            if(features.count != self.NUM_OF_BARCODES) {
+                self.showStatusView(statusText: "Please have both barcodes clearly visible in camera", isError: true)
+                return
+            }
+            
+            // Flag to determin if any read barcode is invalid / can't be read
+            var isValid = true
+            var statusText: String = ""
+            
+            /*
+             Date Barcode Raw Value: e.g 1991/04/29
+             CertificateNo Raw Value: e.g K9548487
+             */
+            for feature in features {
+                // If an invalid barcode was scanned, no need to continue
+                if (!isValid) {
+                    break
+                } else if (!self.needValuesFrom.ocr) {
+                    // If a picture was taken and there are 2 barcodes detected, No need to check if barcodes within bounds of barcode views
+                    isValid = true
+                    break
+                }
+                
+                // Figure out which container the barcode belongs to
+                let barcodeTopLeft =  self._cameraPreview.translateImagePointToPreviewLayer(forPoint: feature.cornerPoints![0].cgPointValue, relativeTo: image.size)
+                var _containerView: UIView!
+                
+                // If the top left of the barcode is further past the right border of the the certificate view, assume barcode is for DoB
+                if(barcodeTopLeft.x > self._certificateBarcodeReader.frame.origin.x + self._certificateBarcodeReader.frame.width) {
+                    _containerView = self._birthdayBarcodeReader
+                } else {
+                    // Otherwise assume barcode is for Certificate No
+                    _containerView = self._certificateBarcodeReader
+                }
+                
+                let barcodeType = self.getBarcodeType(barcode: feature)
+                // Check if barcode is within view
+                let validBarcode = self.isValidBarcodeInView(barcode: feature, barcodeType: barcodeType, containerView: _containerView, imageSize: image.size)
+                if !validBarcode.isValid {
+                    // If any of the barcodes fail, false flag
+                    isValid = false
+                    statusText = validBarcode.statusText
+                }
+            }
+            
+            // Both Barcodes were read successfully
+            if(isValid) {
+                statusText = "Yay both barcodes read!"
+                self.needValuesFrom.barcode = false
+                if(self.needValuesFrom.ocr) {
+                    self.takeImagePhoto()
+                } else {
+                    self.finalFullImage = image
+                }
+            }
+            self.showStatusView(statusText: statusText, isError: !isValid)
+        }
+    }
+    
     private func takeImagePhoto(){
-        self.shouldScan = false;
         self._cameraFeed.takePhoto()
             .subscribeOn(ConcurrentMainScheduler.instance)
             .subscribe(onSuccess: {
@@ -398,8 +412,13 @@ class VisionController: UIViewController {
                 if let fixedImage = image.fixedOrientation() {
                     self.showStatusView(statusText: "Successfully captured Photo", isError: false)
                     self.readImageText(image: fixedImage)
-                } else {
-                    self.shouldScan = true
+                    self.needValuesFrom.ocr = false
+                    if(self.needValuesFrom.barcode) {
+                        self.detectBarcodeInImage(image: fixedImage)
+                    } else {
+                        self.finalFullImage = fixedImage
+                    }
+                    
                 }
             }, onError: {
                 error in
@@ -424,8 +443,8 @@ class VisionController: UIViewController {
             }
             
             for block in result.blocks {
-                print("Block: \(block.text)")
             }
+            self.needValuesFrom.ocr = false
         }
         
     }
@@ -487,27 +506,31 @@ class VisionController: UIViewController {
     }
     
     private func showStatusView(statusText: String, isError: Bool) {
-        var icon: UIImage!
-        if(isError) {
-            self.statusView.layer.backgroundColor = StatusColors.errorColor.value.cgColor
-            icon = StatusIcons.errorIcon.value
-        } else {
-            self.statusView.layer.backgroundColor = StatusColors.successColor.value.cgColor
-            icon = StatusIcons.successIcon.value
+        DispatchQueue.main.async {
+            [weak self] in
+            var icon: UIImage!
+            if(isError) {
+                self?.statusView.layer.backgroundColor = StatusColors.errorColor.value.cgColor
+                icon = StatusIcons.errorIcon.value
+            } else {
+                self?.statusView.layer.backgroundColor = StatusColors.successColor.value.cgColor
+                icon = StatusIcons.successIcon.value
+            }
+            
+            // Load icon to be displayed with text
+            let iconAttachment = NSTextAttachment()
+            iconAttachment.image = icon
+            let iconString = NSAttributedString(attachment: iconAttachment)
+            
+            // Add a tab between icon and status text
+            let displayedText = "\t" + statusText
+            let stringText = NSAttributedString(string: displayedText)
+            let mutableAttachmentString = NSMutableAttributedString(attributedString: iconString)
+            mutableAttachmentString.append(stringText)
+            
+            self?._promptLabel?.attributedText = mutableAttachmentString
+            
         }
-        
-        // Load icon to be displayed with text
-        let iconAttachment = NSTextAttachment()
-        iconAttachment.image = icon
-        let iconString = NSAttributedString(attachment: iconAttachment)
-
-        // Add a tab between icon and status text
-        let displayedText = "\t" + statusText
-        let stringText = NSAttributedString(string: displayedText)
-        let mutableAttachmentString = NSMutableAttributedString(attributedString: iconString)
-        mutableAttachmentString.append(stringText)
-
-        self._promptLabel?.attributedText = mutableAttachmentString
     }
     
     /*
@@ -515,8 +538,8 @@ class VisionController: UIViewController {
      */
     private func initiateScanButtonHelper() {
         DispatchQueue.main.asyncAfter(deadline: .now() + self.MANUAL_SCAN_WAIT_TIME) {
-            [unowned self] in
-            self.scanButton.isHidden = false
+            [weak self] in
+            self?.scanButton.isHidden = false
         }
     }
     

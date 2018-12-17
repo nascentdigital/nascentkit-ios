@@ -35,6 +35,7 @@ public class CameraFeedView: UIView {
     
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
+
         previewLayer.session = cameraFeed.captureSession
         
         // position layer
