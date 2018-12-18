@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		41D266FAF5C5D6CA14C0821F /* Pods_CameraVision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46FC0F7EC3835C066CA81F5A /* Pods_CameraVision.framework */; };
 		E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E029924B21BB2267002B607A /* GoogleService-Info.plist */; };
-		E05DFEF021C4086400FBAE3A /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEEF21C4086400FBAE3A /* background.png */; };
 		E05DFEF421C40B6600FBAE3A /* Success.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF321C40B6600FBAE3A /* Success.png */; };
 		E05DFEF621C40B6E00FBAE3A /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF521C40B6D00FBAE3A /* info.png */; };
 		E06A63E621C7F2CB00C8912C /* Error.png in Resources */ = {isa = PBXBuildFile; fileRef = E06A63E521C7F2CB00C8912C /* Error.png */; };
+		E06A63EA21C940D300C8912C /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = E06A63E921C940D300C8912C /* background.png */; };
 		FB2B9D162183D6CA00897AF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */; };
 		FB2B9D182183D6CA00897AF5 /* VisionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D172183D6CA00897AF5 /* VisionController.swift */; };
 		FB2B9D1B2183D6CA00897AF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB2B9D192183D6CA00897AF5 /* Main.storyboard */; };
@@ -26,10 +26,10 @@
 		7EC5DCCAF838AEC3E5D9F4FE /* Pods-CameraVision.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.debug.xcconfig"; sourceTree = "<group>"; };
 		C006BE3F50446208C75A6C48 /* Pods-CameraVision.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.release.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.release.xcconfig"; sourceTree = "<group>"; };
 		E029924B21BB2267002B607A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		E05DFEEF21C4086400FBAE3A /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
 		E05DFEF321C40B6600FBAE3A /* Success.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Success.png; sourceTree = "<group>"; };
 		E05DFEF521C40B6D00FBAE3A /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
 		E06A63E521C7F2CB00C8912C /* Error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Error.png; path = ../../../../../../../Documents/Error.png; sourceTree = "<group>"; };
+		E06A63E921C940D300C8912C /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = background.png; path = ../../../../../../../Documents/background.png; sourceTree = "<group>"; };
 		FB2B9D122183D6CA00897AF5 /* CameraVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FB2B9D172183D6CA00897AF5 /* VisionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionController.swift; sourceTree = "<group>"; };
@@ -98,9 +98,9 @@
 				FB2B9D1E2183D6CB00897AF5 /* LaunchScreen.storyboard */,
 				E029924B21BB2267002B607A /* GoogleService-Info.plist */,
 				FB2B9D212183D6CB00897AF5 /* Info.plist */,
-				E05DFEEF21C4086400FBAE3A /* background.png */,
 				E05DFEF321C40B6600FBAE3A /* Success.png */,
 				E06A63E521C7F2CB00C8912C /* Error.png */,
+				E06A63E921C940D300C8912C /* background.png */,
 				E05DFEF521C40B6D00FBAE3A /* info.png */,
 			);
 			path = CameraVision;
@@ -168,7 +168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB2B9D202183D6CB00897AF5 /* LaunchScreen.storyboard in Resources */,
-				E05DFEF021C4086400FBAE3A /* background.png in Resources */,
+				E06A63EA21C940D300C8912C /* background.png in Resources */,
 				E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */,
 				FB2B9D1D2183D6CB00897AF5 /* Assets.xcassets in Resources */,
 				E05DFEF421C40B6600FBAE3A /* Success.png in Resources */,

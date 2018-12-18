@@ -1,6 +1,6 @@
 import Foundation
 import UIKit
-import AVFoundation.AVSampleBufferDisplayLayer
+import RxSwift
 
 public class CameraFeedView: UIView {
 
@@ -10,8 +10,11 @@ public class CameraFeedView: UIView {
     private var _innerContainerSize: CGRect!
     private var _lastOffset: CGFloat!
     private var _previewLayerRectConverted: CGRect!
+    private var _previewLayerRect$ = PublishSubject<CGRect>()
     private var _additionalTopOffset: CGFloat! = 0
     
+    
+    public var previewLayerRect: Observable<CGRect> { return _previewLayerRect$ }
     public override init(frame: CGRect) {
     
         // call base constructor
@@ -31,7 +34,7 @@ public class CameraFeedView: UIView {
     }
 
     
-    public func startPreview(cameraFeed: CameraFeed, videoGravity: AVLayerVideoGravity?) {
+    public func startPreview(cameraFeed: CameraFeed) {
     
         // bind feed session to layer
         let previewLayer = _capturePreview.previewLayer
@@ -40,8 +43,7 @@ public class CameraFeedView: UIView {
         
         // position layer
         previewLayer.backgroundColor = UIColor.clear.cgColor
-        // If passed in videoGravity value, use it. Otherwise default to .resizeAspect
-        previewLayer.videoGravity =  videoGravity ?? .resizeAspect
+        previewLayer.videoGravity = .resizeAspect
         
         // show
         isHidden = false
@@ -184,7 +186,10 @@ public class CameraFeedView: UIView {
             _previewLayerRectConverted = CGRect(x: topLeft.x,
                                                 y: topLeft.y,
                                                 width: (topRight.x - topLeft.x),
-                                                height: (bottomLeft.y - topLeft.y))
+                                                height: (topLeft.y - bottomLeft.y))
+            
+            // Publish update to the preview layerconverted rect size
+            _previewLayerRect$.onNext(_previewLayerRectConverted)
         }
     }
     
