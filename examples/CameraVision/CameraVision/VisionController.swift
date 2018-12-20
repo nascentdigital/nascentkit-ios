@@ -190,7 +190,6 @@ class VisionController: UIViewController {
         self.scanButton.isHidden = true
         
         bottomContainerView.layer.contents = UIImage(named: "background.png")?.cgImage
-        view.layer.backgroundColor = UIColor.black.cgColor
         
         //Setup status view to prompt the user of any issues
         statusView.layer.backgroundColor = StatusColors.infoColor.value.cgColor
@@ -214,7 +213,8 @@ class VisionController: UIViewController {
 
         //Setup Mask color
         maskView.layer.backgroundColor = UIColor(red: 79/255, green: 98/255, blue: 121/255, alpha: 0.4).cgColor
-        
+        view.layer.backgroundColor = UIColor(red: 79/255, green: 98/255, blue: 121/255, alpha: 1).cgColor
+
         _promptLabel = UILabel(frame: CGRect(x: 50, y: 0, width: self.statusView.frame.width - 20, height: self.statusView.frame.height))
         
         //Configure prompt label
@@ -428,7 +428,7 @@ class VisionController: UIViewController {
             return
         }
         self._cameraFeed.takePhoto()
-            .subscribeOn(ConcurrentMainScheduler.instance)
+            .subscribeOn(SerialDispatchQueueScheduler(qos: .background))
             .subscribe(onSuccess: {
                 [unowned self]
                 image in
@@ -443,7 +443,7 @@ class VisionController: UIViewController {
                         // Go to next page
                         self.performSegue(withIdentifier: "detailController", sender: nil)
                     }
-                    
+
                 }
             }, onError: {
                 error in
