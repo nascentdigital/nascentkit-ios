@@ -153,6 +153,8 @@ class VisionController: UIViewController {
     let Y_VALID_MARGIN: Int = 5
     let NUM_OF_BARCODES: Int = 2
     let MANUAL_SCAN_WAIT_TIME = 5.0
+    // Lower bound for luminosity value ( Currently this is just a magic number )
+    let LOW_LUMINOSITY_LEVEL: Int = 100
     
     @IBOutlet weak var _cameraPreview: CameraFeedView!
     @IBOutlet weak var _certificateLabel: UILabel!
@@ -339,8 +341,15 @@ class VisionController: UIViewController {
                 features, error in
                 
                 guard error == nil, let features = features, !features.isEmpty else {
-                    self?.showStatusView(statusText: "Unable to detect barcode \nPlease reposition until both barcodes are within view", isError: true)
-                    return
+                    // Check if brightness is a possible reason barcodes were not scanned
+                    if (!(self?.isImageValidBrightness(image: image))!) {
+                        self?.showStatusView(statusText: "Image brightness appears low. \nPlease make sure document is well lit", isError: true)
+                        return
+                    } else {
+                        self?.showStatusView(statusText: "Unable to detect barcode \nPlease reposition until both barcodes are within view", isError: true)
+                        return
+                    }
+
                 }
                 
                 // Flag to determin if any read barcode is invalid / can't be read
@@ -353,8 +362,14 @@ class VisionController: UIViewController {
                     
                     isValid = false
                     let missingBarcode = barcodeType == BarcodeType.CertificateNo ? BarcodeType.DateOfBirth.name : BarcodeType.CertificateNo.name
-                    self?.showStatusView(statusText: "One barcode detected. \nPlease move document so \(missingBarcode) is in view", isError: false)
-                    return
+                    if(!(self?.isImageValidBrightness(image: image))!) {
+                        self?.showStatusView(statusText: "Unable to detect \(missingBarcode) barcode. \nPlease make sure document is well lit", isError: true)
+                        return
+                    } else {
+                        self?.showStatusView(statusText: "One barcode detected. \nPlease move document so \(missingBarcode) is in view", isError: false)
+                        return
+
+                    }
                 }
                 
                 // Reset the final barcode values array
@@ -443,7 +458,6 @@ class VisionController: UIViewController {
                         // Go to next page
                         self.performSegue(withIdentifier: "detailController", sender: nil)
                     }
-
                 }
             }, onError: {
                 error in
@@ -536,7 +550,7 @@ class VisionController: UIViewController {
         dateFormatter.dateFormat = "yyyy/MM/dd"
         guard dateFormatter.date(from: rawValue!) != nil else {
             // Its not a valid date , check if its a Certificate Number
-            // TODO: This isnt always a certificate No. Need criteria to classify string as certificate No or not
+            // TODO: This isnt always a certificate No. Need criteria to classify string as certificate No. or not
             return BarcodeType.CertificateNo
         }
         
@@ -645,6 +659,107 @@ class VisionController: UIViewController {
             // Recalculate mask based on newly positioned barcode views
             addMaskView()
         }
+    }
+    
+    /*
+        Check if the image is deemed bright enough to not impact scanning
+     */
+    private func isImageValidBrightness(image: UIImage) -> Bool{
+        
+        let imageLuminosity = calculateImageLuminosity(image: image)
+        
+        // TODO: Potentially have more 'brightness' options instead of 1 basic check.
+        if(imageLuminosity < LOW_LUMINOSITY_LEVEL) {
+            // Image brightness is lower than expected
+            return false
+        } else {
+            // Image brightness is of acceptable value
+            return true
+        }
+        
+    }
+    
+    /*
+        Calculates the average luminosity intensity for the Image
+     */
+    private func calculateImageLuminosity(image: UIImage) -> Int {
+        
+        //Resize image to perform luminosity calculations, resizing to 100 width while keeping aspect ratio
+        let newImageWidth:CGFloat = 100.0
+        let scale = newImageWidth / image.size.width
+        let newImageHeight = image.size.height * scale
+        
+        UIGraphicsBeginImageContext(CGSize(width: newImageWidth, height: newImageHeight))
+        image.draw(in: CGRect(x: 0, y: 0, width: newImageWidth, height: newImageHeight))
+        // Save the scaled down res photo
+        let scaledDownOriginalImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        // Once we have the scaled down image, need to convert to Greyscale for luminosity calculations
+        let greyImageRect: CGRect = CGRect(x: 0, y: 0, width: newImageWidth, height: newImageHeight)
+        let greyscaleColorSpace = CGColorSpaceCreateDeviceGray()
+        
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue)
+        let context =   CGContext(data: nil,
+                                  width: Int(newImageWidth),
+                                  height: Int(newImageHeight),
+                                  bitsPerComponent: 8,
+                                  bytesPerRow: 0,
+                                  space: greyscaleColorSpace,
+                                  bitmapInfo: bitmapInfo.rawValue)
+        
+        context?.draw((scaledDownOriginalImage?.cgImage)!, in: greyImageRect)
+        
+        // Save greyscale CG Image
+        let greyscaleCgImage: CGImage! = context?.makeImage()
+        
+        /*
+            Once we have the greyscale image, we only look at the intensity near the middle of the image
+            We avoid looking at intensity around the edges and near text at top
+         */
+        let croppedOrigin = CGPoint(x: 0, y: CGFloat(greyscaleCgImage.height) * 0.30)
+        let croppedImage: CGImage! = greyscaleCgImage.cropping(to: CGRect(x: croppedOrigin.x,
+                                                                          y: croppedOrigin.y,
+                                                                          width: (CGFloat(greyscaleCgImage.width) - croppedOrigin.x) - 10.0,
+                                                                          height: (CGFloat(greyscaleCgImage.height) - croppedOrigin.y) - 10.0))
+        
+        let bitsPerComponent = croppedImage.bitsPerComponent
+        let bytesPerRow = croppedImage.bytesPerRow
+        let totalBytes = croppedImage.height * bytesPerRow
+        
+        /*
+         Array of greyscale pixel values for sized down image
+         Values range from 0 (being dark or black) to 255 (being bright or white)
+         */
+        var intensities = [UInt8](repeating: 0, count: totalBytes)
+        
+        let contextRef = CGContext(data: &intensities,
+                                   width: croppedImage.width,
+                                   height: croppedImage.height,
+                                   bitsPerComponent: bitsPerComponent,
+                                   bytesPerRow: bytesPerRow,
+                                   space: greyscaleColorSpace,
+                                   bitmapInfo: 0)
+        
+        contextRef?.draw(croppedImage, in: CGRect(x: 0,
+                                                  y: 0,
+                                                  width: croppedImage.width,
+                                                  height: croppedImage.height))
+        
+        var intensitySum: Int = 0;
+        
+        // Calculate Avg and Median from the array of intensity values
+        for intensity in intensities {
+            intensitySum += Int(intensity)
+        }
+        let averageIntensity = intensitySum / intensities.count
+        let medianIntensity = intensities.sorted(by: <)[intensities.count / 2]
+        
+        print("Avg Intensities: \(averageIntensity)")
+        print("median Intensity: \(medianIntensity)")
+        
+        return averageIntensity
+
     }
     
     @IBAction func toggleCameraPosition() {
