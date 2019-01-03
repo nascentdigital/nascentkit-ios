@@ -100,6 +100,7 @@ enum StatusIcons {
     case errorIcon
 }
 
+// Extension for getting associated colors for known status
 extension StatusColors {
     var value: UIColor {
         get {
@@ -115,6 +116,7 @@ extension StatusColors {
     }
 }
 
+// Extension for getting associated images for known status
 extension StatusIcons {
     var value: UIImage {
         get {
@@ -182,7 +184,8 @@ class VisionController: UIViewController {
     
     private var finalFullImage: UIImage?
     
-    private var shouldScan: Bool! = true
+    private var takeNextSample: Bool! = true
+    
     override func viewDidLoad() {
         
         // call base implementation
@@ -311,15 +314,20 @@ class VisionController: UIViewController {
         
         _cameraFeed.videoSamples
                 .throttle(3.5, scheduler: SerialDispatchQueueScheduler(qos: .background))
-                // Skip first Observable call so user has time to position camera
-                .skip(1)
+                // Skip while another sample is being processed
+                .skipWhile({ (image) -> Bool in
+                   return !self.takeNextSample
+                })
                 .subscribe(
                     onNext: {
                         [unowned self]
                         image in
+
                         if(!self.needValuesFrom.barcode) {
                             return
                         }
+                        // Set sample flag
+                        self.takeNextSample = false
                         self.detectBarcodeInImage(image: image)
                     },
                     onError: {
@@ -484,8 +492,8 @@ class VisionController: UIViewController {
                     return
                 }
                 
-                for _ in result.blocks {
-                }
+                // OCR text data stored in 'result'
+                
                 self?.needValuesFrom.ocr = false
             }
         }
@@ -501,6 +509,7 @@ class VisionController: UIViewController {
         var isValid = false
         var statusText: String = ""
         
+        // cornerPoints hold points for 4 corners of scanned barcode starting from top left and going clockwise
         _ = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![0].cgPointValue, relativeTo: imageSize)
         let barcodeBottomLeft = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![3].cgPointValue, relativeTo: imageSize)
         let barcodeTopRight = _cameraPreview.translateImagePointToPreviewLayer(forPoint: barcode.cornerPoints![1].cgPointValue, relativeTo: imageSize)
@@ -584,7 +593,11 @@ class VisionController: UIViewController {
             let mutableAttachmentString = NSMutableAttributedString(attributedString: iconString)
             mutableAttachmentString.append(stringText)
             
+            // Update status text
             self?._promptLabel?.text = statusText
+            
+            // Reset sample flag to now allow next frame sample to be accepted
+            self?.takeNextSample = true
             
         }
     }
@@ -596,7 +609,6 @@ class VisionController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + self.MANUAL_SCAN_WAIT_TIME) {
             [weak self] in
             self?.scanButton.isHidden = false
-            // self?.shouldScan = false
             self?.showStatusView(statusText: "Cannnot auto-scan. Please capture manually", isError: false)
         }
     }
