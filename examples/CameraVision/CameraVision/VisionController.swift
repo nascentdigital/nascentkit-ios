@@ -158,6 +158,9 @@ class VisionController: UIViewController {
     // Lower bound for luminosity value ( Currently this is just a magic number )
     let LOW_LUMINOSITY_LEVEL: Int = 100
     
+    //Throttle value for the camera feed to capture images
+    let CAMERA_FEED_THROTTLE: RxTimeInterval = 4
+    
     @IBOutlet weak var _cameraPreview: CameraFeedView!
     @IBOutlet weak var _certificateLabel: UILabel!
     @IBOutlet weak var scanButton: UIButton!
@@ -313,19 +316,16 @@ class VisionController: UIViewController {
         barcodeDetector = vision.barcodeDetector(options: barcodeOptions)
         
         _cameraFeed.videoSamples
-                .throttle(3.5, scheduler: SerialDispatchQueueScheduler(qos: .background))
+                .throttle(self.CAMERA_FEED_THROTTLE, scheduler: SerialDispatchQueueScheduler(qos: .background))
                 // Skip while another sample is being processed
                 .skipWhile({ (image) -> Bool in
-                   return !self.takeNextSample
+                   return !self.takeNextSample || !self.needValuesFrom.barcode
                 })
                 .subscribe(
                     onNext: {
                         [unowned self]
                         image in
 
-                        if(!self.needValuesFrom.barcode) {
-                            return
-                        }
                         // Set sample flag
                         self.takeNextSample = false
                         self.detectBarcodeInImage(image: image)
