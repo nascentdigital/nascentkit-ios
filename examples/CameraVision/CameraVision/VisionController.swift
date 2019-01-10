@@ -602,8 +602,8 @@ class VisionController: UIViewController {
         }
     }
     
-    /*
-        Function to display the manual picture scan button if the user hasnt lined up ( or cant line up ) within set time
+    /* Function to display the manual picture scan button if the user hasnt lined up ( or cant line up ) within set time
+     * For demonstration purposes:  
      */
     private func initiateScanButtonHelper() {
         DispatchQueue.main.asyncAfter(deadline: .now() + self.MANUAL_SCAN_WAIT_TIME) {
