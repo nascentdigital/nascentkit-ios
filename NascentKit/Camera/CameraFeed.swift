@@ -19,6 +19,15 @@ public class CameraFeed: NSObject,
     private var _photoError: Error?
     private var _photoCompletion: Single<UIImage>.SingleObserver?
     
+    private var _sampling = false
+    public var sampling: Bool {
+        get {
+            return _sampling
+        }
+        set(value) {
+            _sampling = value
+        }
+    }
     public var videoSamples: Observable<UIImage> { return _videoSample$ }
 
 
@@ -53,7 +62,7 @@ public class CameraFeed: NSObject,
         return deferral.asObservable()
     }
 
-    public func start(cameraPosition: AVCaptureDevice.Position) throws {
+    public func start(cameraPosition: AVCaptureDevice.Position, sampling: Bool = false) throws {
     
         // fail immediately if camera permission isn't granted
         if (CameraFeed.getPermission() != .authorized) {
@@ -65,6 +74,8 @@ public class CameraFeed: NSObject,
 
         // start capture session
         captureSession.startRunning()
+        
+        _sampling = sampling
     }
     
     public func stop() {
@@ -210,7 +221,7 @@ public class CameraFeed: NSObject,
         
         // bind camera device to session
         captureSession.addInput(captureInput)
-    
+
         // bind video preview to session (raise error if camera can't be used for video)
         let videoOutput = AVCaptureVideoDataOutput();
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "CamaraFeed.Samples"))
@@ -220,7 +231,7 @@ public class CameraFeed: NSObject,
         }
         captureSession.sessionPreset = .high
         captureSession.addOutput(videoOutput)
-        
+
         // ensure that images built in output have correct orientation
         guard let videoOutputConnection = videoOutput.connection(with: .video)
         else {
@@ -247,12 +258,13 @@ public class CameraFeed: NSObject,
     
     
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    
+
     @objc(captureOutput:didOutputSampleBuffer:fromConnection:)
     public func captureOutput(_ output: AVCaptureOutput,
             didOutput buffer: CMSampleBuffer,
             from connection: AVCaptureConnection) {
-        
+
+        guard sampling else { return }
         // get image buffer (or fail)
         guard let imageBuffer = CMSampleBufferGetImageBuffer(buffer)
         else {

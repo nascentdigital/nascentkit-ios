@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		41D266FAF5C5D6CA14C0821F /* Pods_CameraVision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46FC0F7EC3835C066CA81F5A /* Pods_CameraVision.framework */; };
+		B037680521E3F066001FBDCD /* Error.png in Resources */ = {isa = PBXBuildFile; fileRef = B037680321E3F066001FBDCD /* Error.png */; };
+		B037680621E3F066001FBDCD /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = B037680421E3F066001FBDCD /* background.png */; };
+		E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E029924B21BB2267002B607A /* GoogleService-Info.plist */; };
+		E05DFEF421C40B6600FBAE3A /* Success.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF321C40B6600FBAE3A /* Success.png */; };
+		E05DFEF621C40B6E00FBAE3A /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = E05DFEF521C40B6D00FBAE3A /* info.png */; };
 		FB2B9D162183D6CA00897AF5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */; };
 		FB2B9D182183D6CA00897AF5 /* VisionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2B9D172183D6CA00897AF5 /* VisionController.swift */; };
 		FB2B9D1B2183D6CA00897AF5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB2B9D192183D6CA00897AF5 /* Main.storyboard */; };
@@ -19,7 +24,12 @@
 /* Begin PBXFileReference section */
 		46FC0F7EC3835C066CA81F5A /* Pods_CameraVision.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CameraVision.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EC5DCCAF838AEC3E5D9F4FE /* Pods-CameraVision.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.debug.xcconfig"; sourceTree = "<group>"; };
+		B037680321E3F066001FBDCD /* Error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Error.png; sourceTree = "<group>"; };
+		B037680421E3F066001FBDCD /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
 		C006BE3F50446208C75A6C48 /* Pods-CameraVision.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraVision.release.xcconfig"; path = "Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision.release.xcconfig"; sourceTree = "<group>"; };
+		E029924B21BB2267002B607A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E05DFEF321C40B6600FBAE3A /* Success.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Success.png; sourceTree = "<group>"; };
+		E05DFEF521C40B6D00FBAE3A /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
 		FB2B9D122183D6CA00897AF5 /* CameraVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FB2B9D172183D6CA00897AF5 /* VisionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionController.swift; sourceTree = "<group>"; };
@@ -80,13 +90,18 @@
 		FB2B9D142183D6CA00897AF5 /* CameraVision */ = {
 			isa = PBXGroup;
 			children = (
+				B037680421E3F066001FBDCD /* background.png */,
+				B037680321E3F066001FBDCD /* Error.png */,
 				FB2B9D152183D6CA00897AF5 /* AppDelegate.swift */,
 				FB2B9D272183D98400897AF5 /* WelcomeController.swift */,
 				FB2B9D172183D6CA00897AF5 /* VisionController.swift */,
 				FB2B9D192183D6CA00897AF5 /* Main.storyboard */,
 				FB2B9D1C2183D6CB00897AF5 /* Assets.xcassets */,
 				FB2B9D1E2183D6CB00897AF5 /* LaunchScreen.storyboard */,
+				E029924B21BB2267002B607A /* GoogleService-Info.plist */,
 				FB2B9D212183D6CB00897AF5 /* Info.plist */,
+				E05DFEF321C40B6600FBAE3A /* Success.png */,
+				E05DFEF521C40B6D00FBAE3A /* info.png */,
 			);
 			path = CameraVision;
 			sourceTree = "<group>";
@@ -103,6 +118,7 @@
 				FB2B9D0F2183D6CA00897AF5 /* Frameworks */,
 				FB2B9D102183D6CA00897AF5 /* Resources */,
 				8917E036A7AB5C16B2430F85 /* [CP] Embed Pods Frameworks */,
+				CA44C184B772D146A448181B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -152,8 +168,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB2B9D202183D6CB00897AF5 /* LaunchScreen.storyboard in Resources */,
+				B037680621E3F066001FBDCD /* background.png in Resources */,
+				E029924C21BB2267002B607A /* GoogleService-Info.plist in Resources */,
 				FB2B9D1D2183D6CB00897AF5 /* Assets.xcassets in Resources */,
+				E05DFEF421C40B6600FBAE3A /* Success.png in Resources */,
+				B037680521E3F066001FBDCD /* Error.png in Resources */,
 				FB2B9D1B2183D6CA00897AF5 /* Main.storyboard in Resources */,
+				E05DFEF621C40B6E00FBAE3A /* info.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,20 +187,56 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-CameraVision/Pods-CameraVision-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleAPIClientForREST/GoogleAPIClientForREST.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/NascentKit/NascentKit.framework",
+				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
+				"${BUILT_PRODUCTS_DIR}/RxAtomic/RxAtomic.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleAPIClientForREST.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/NascentKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxAtomic.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CameraVision/Pods-CameraVision-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CameraVision/Pods-CameraVision-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CA44C184B772D146A448181B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CameraVision/Pods-CameraVision-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleMobileVision/GoogleMVTextDetectorResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleMVTextDetectorResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CameraVision/Pods-CameraVision-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E10CE6D837B8D8D87BBA790E /* [CP] Check Pods Manifest.lock */ = {
@@ -359,6 +416,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -378,6 +436,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9SNZ8X3UFW;
 				INFOPLIST_FILE = CameraVision/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
